@@ -1,8 +1,9 @@
-int thumb_root(struct decomp_request *req, struct decomp_result *res);
+int thumb_root(struct decomp_request* req, struct decomp_result* res);
 
 /* these are the <foo> and <bar> found in the spec's format strings */
-enum decomp_field {
-	FIELD_UNINIT=0,
+enum decomp_field
+{
+	FIELD_UNINIT = 0,
 	FIELD_A,
 	FIELD_APSR_C,
 	FIELD_B,

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "binaryninjaapi.h"
 #include "armv7.h"
+#include "binaryninjaapi.h"
 
 #define IL_FLAG_N 0
 #define IL_FLAG_Z 2
@@ -10,8 +10,8 @@
 #define IL_FLAG_Q 8
 
 #define IL_FLAGWRITE_NONE 0
-#define IL_FLAGWRITE_ALL 1
-#define IL_FLAGWRITE_NZ 2
+#define IL_FLAGWRITE_ALL  1
+#define IL_FLAGWRITE_NZ   2
 
 struct decomp_result;
 
@@ -42,16 +42,17 @@ enum Armv7Intrinsic : uint32_t
 	ARMV7_INTRIN_WFI,
 	// Following names are from Table D17-2 of ARM DDI 0406C.d, changed  from
 	// CamelCase to UPPERCASE with underscores preserved and ARMV7_INTRIN_ prefixed.
-	ARMV7_INTRIN_COPROC_GETONEWORD, // MRC, MRC2
-	ARMV7_INTRIN_COPROC_GETTWOWORDS, // MRRC, MRRC2
-	ARMV7_INTRIN_COPROC_SENDONEWORD, // MCR, MCR2
-	ARMV7_INTRIN_COPROC_SENDTWOWORDS, // MCRR, MCRR2
+	ARMV7_INTRIN_COPROC_GETONEWORD,    // MRC, MRC2
+	ARMV7_INTRIN_COPROC_GETTWOWORDS,   // MRRC, MRRC2
+	ARMV7_INTRIN_COPROC_SENDONEWORD,   // MCR, MCR2
+	ARMV7_INTRIN_COPROC_SENDTWOWORDS,  // MCRR, MCRR2
 };
 
 bool GetLowLevelILForArmInstruction(BinaryNinja::Architecture* arch, uint64_t addr,
     BinaryNinja::LowLevelILFunction& il, armv7::Instruction& instr, size_t addrSize);
 bool GetLowLevelILForThumbInstruction(BinaryNinja::Architecture* arch,
-    BinaryNinja::LowLevelILFunction& il, decomp_result *instr, bool ifThenBlock = false);
-void SetupThumbConditionalInstructionIL(BinaryNinja::LowLevelILFunction& il, BinaryNinja::LowLevelILLabel& trueLabel,
-    BinaryNinja::LowLevelILLabel& falseLabel, uint32_t cond);
+    BinaryNinja::LowLevelILFunction& il, decomp_result* instr, bool ifThenBlock = false);
+void SetupThumbConditionalInstructionIL(BinaryNinja::LowLevelILFunction& il,
+    BinaryNinja::LowLevelILLabel& trueLabel, BinaryNinja::LowLevelILLabel& falseLabel,
+    uint32_t cond);
 BinaryNinja::ExprId GetCondition(BinaryNinja::LowLevelILFunction& il, armv7::Condition cond);

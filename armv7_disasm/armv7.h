@@ -11,22 +11,23 @@
 #else
 	#include <stdlib.h>
 	#ifdef __cplusplus
-	#define restrict __restrict
+		#define restrict __restrict
 	#endif
 #endif
 
 #define MAX_OPERANDS 6
 
 #define UNCONDITIONAL(c) (((c) == COND_NONE) || ((c) == COND_NONE2))
-#define CONDITIONAL(c) (((c) != COND_NONE) && ((c) != COND_NONE2))
+#define CONDITIONAL(c)   (((c) != COND_NONE) && ((c) != COND_NONE2))
 
 #ifdef __cplusplus
-#define restrict __restrict
+	#define restrict __restrict
 
 namespace armv7 {
 #endif
 
-enum Operation {
+enum Operation
+{
 	ARMV7_UNDEFINED,
 	ARMV7_UNPREDICTABLE,
 	ARMV7_ADC,
@@ -79,10 +80,10 @@ enum Operation {
 	ARMV7_LDA,
 	ARMV7_LDAB,
 	ARMV7_LDAH,
-	ARMV7_LDAEX, // A32
-	ARMV7_LDAEXB, // A32
-	ARMV7_LDAEXH, // A32
-	ARMV7_LDAEXD, // A32
+	ARMV7_LDAEX,   // A32
+	ARMV7_LDAEXB,  // A32
+	ARMV7_LDAEXH,  // A32
+	ARMV7_LDAEXD,  // A32
 	ARMV7_LDC,
 	ARMV7_LDC2,
 	ARMV7_LDC2L,
@@ -236,13 +237,13 @@ enum Operation {
 	ARMV7_STC2,
 	ARMV7_STC2L,
 	ARMV7_STCL,
-	ARMV7_STL, // A32
+	ARMV7_STL,  // A32
 	ARMV7_STLB,
 	ARMV7_STLH,
-	ARMV7_STLEX, // A32
-	ARMV7_STLEXB, // A32
-	ARMV7_STLEXH, // A32
-	ARMV7_STLEXD, // A32
+	ARMV7_STLEX,   // A32
+	ARMV7_STLEXB,  // A32
+	ARMV7_STLEXH,  // A32
+	ARMV7_STLEXD,  // A32
 	ARMV7_STM,
 	ARMV7_STMBD,
 	ARMV7_STMDA,
@@ -467,7 +468,8 @@ enum Operation {
 	ARMV7_END_INSTRUCTION
 };
 
-enum Shift {
+enum Shift
+{
 	SHIFT_NONE,
 	SHIFT_LSL,
 	SHIFT_LSR,
@@ -477,7 +479,8 @@ enum Shift {
 	SHIFT_END
 };
 
-enum Condition {
+enum Condition
+{
 	COND_EQ,
 	COND_NE,
 	COND_CS,
@@ -498,7 +501,8 @@ enum Condition {
 };
 
 
-enum RegisterList {
+enum RegisterList
+{
 	REG_LIST_R0 = 0x0001,
 	REG_LIST_R1 = 0x0002,
 	REG_LIST_R2 = 0x0004,
@@ -517,7 +521,8 @@ enum RegisterList {
 	REG_LIST_PC = 0x8000,
 };
 
-enum Register {
+enum Register
+{
 	REG_R0,
 	REG_R1,
 	REG_R2,
@@ -531,9 +536,12 @@ enum Register {
 	REG_R10,
 	REG_R11,
 	REG_R12,
-	REG_SP, REG_R13 = 13,
-	REG_LR, REG_R14 = 14,
-	REG_PC, REG_R15 = 15,
+	REG_SP,
+	REG_R13 = 13,
+	REG_LR,
+	REG_R14 = 14,
+	REG_PC,
+	REG_R15 = 15,
 	REG_S0,
 	REG_S1,
 	REG_S2,
@@ -616,7 +624,8 @@ enum Register {
 	REG_Q15,
 };
 
-enum BankedRegister {
+enum BankedRegister
+{
 	REGB_ELR_HYP,
 	REGB_LR_ABT,
 	REGB_LR_FIQ,
@@ -653,7 +662,8 @@ enum BankedRegister {
 	REGB_INVALID,
 };
 
-enum SpecRegister {
+enum SpecRegister
+{
 	REGS_APSR,
 	REGS_APSR_G,
 	REGS_APSR_NZCVQ,
@@ -691,18 +701,19 @@ enum SpecRegister {
 	REGS_SPSR_FSX,
 	REGS_SPSR_FSXC,
 	REGS_APSR_NZCV,
-	REGS_FPSID, // 0
-	REGS_FPSCR, // 1
-	REGS_MVFR2, // 5
-	REGS_MVFR1, // 6
-	REGS_MVFR0, // 7
-	REGS_FPEXC, // 8
-	REGS_FPINST, // 9
-	REGS_FPINST2, //10
+	REGS_FPSID,    // 0
+	REGS_FPSCR,    // 1
+	REGS_MVFR2,    // 5
+	REGS_MVFR1,    // 6
+	REGS_MVFR0,    // 7
+	REGS_FPEXC,    // 8
+	REGS_FPINST,   // 9
+	REGS_FPINST2,  // 10
 	REGS_END
 };
 
-enum CoprocRegisterC {
+enum CoprocRegisterC
+{
 	REG_C0,
 	REG_C1,
 	REG_C2,
@@ -722,7 +733,8 @@ enum CoprocRegisterC {
 	REG_CEND
 };
 
-enum CoprocRegisterP {
+enum CoprocRegisterP
+{
 	REG_P0,
 	REG_P1,
 	REG_P2,
@@ -742,44 +754,48 @@ enum CoprocRegisterP {
 	REG_PEND
 };
 
-enum Iflags {
-	IFL_NONE, // 000
-	IFL_A,    // 001
-	IFL_I,    // 010
-	IFL_IA,   // 011
-	IFL_F,    // 100
-	IFL_FA,   // 101
-	IFL_FI,   // 110
-	IFL_FIA,  // 111
-	IFL_END   //
+enum Iflags
+{
+	IFL_NONE,  // 000
+	IFL_A,     // 001
+	IFL_I,     // 010
+	IFL_IA,    // 011
+	IFL_F,     // 100
+	IFL_FA,    // 101
+	IFL_FI,    // 110
+	IFL_FIA,   // 111
+	IFL_END    //
 };
 
-enum EndianSpec {
+enum EndianSpec
+{
 	ES_LE,
 	ES_BE
 };
 
-enum DsbOption {
-	DSB_NONE0,  // 0
-	DSB_NONE1,  // 1
-	DSB_OSHST,  // 2
-	DSB_OSH,    // 3
-	DSB_NONE4,  // 4
-	DSB_NONE5,  // 5
-	DSB_NSHST,  // 6
-	DSB_NSH,    //7
-	DSB_NONE8,  // 8
-	DSB_NONE9,  // 9
-	DSB_ISHST,  // 10
-	DSB_ISH,    // 11
-	DSB_NONE12, // 12
-	DSB_NONE13, // 13
-	DSB_ST,     // 14
-	DSB_SY,     // 15
+enum DsbOption
+{
+	DSB_NONE0,   // 0
+	DSB_NONE1,   // 1
+	DSB_OSHST,   // 2
+	DSB_OSH,     // 3
+	DSB_NONE4,   // 4
+	DSB_NONE5,   // 5
+	DSB_NSHST,   // 6
+	DSB_NSH,     // 7
+	DSB_NONE8,   // 8
+	DSB_NONE9,   // 9
+	DSB_ISHST,   // 10
+	DSB_ISH,     // 11
+	DSB_NONE12,  // 12
+	DSB_NONE13,  // 13
+	DSB_ST,      // 14
+	DSB_SY,      // 15
 	DSB_END
 };
 
-enum OperandClass {
+enum OperandClass
+{
 	NONE,
 	IMM,
 	IMM64,
@@ -805,9 +821,10 @@ enum OperandClass {
 	FIMM64
 };
 
-enum DataType {
+enum DataType
+{
 	DT_NONE = 0,
-	DT_S8   = 1,
+	DT_S8 = 1,
 	DT_S16,
 	DT_S32,
 	DT_S64,
@@ -833,16 +850,19 @@ enum DataType {
 	DT_END
 };
 
-struct InstructionOperand {
+struct InstructionOperand
+{
 	enum OperandClass cls;
-	struct {
-		uint32_t wb:1;  //write back?
-		uint32_t add:1; //Tells whether offset should be added or subtracted
-		uint32_t hasElements:1; //does the register have an array index
-		uint32_t emptyElement:1;
-		uint32_t offsetRegUsed:1; //Is the offset register being used
+	struct
+	{
+		uint32_t wb : 1;           // write back?
+		uint32_t add : 1;          // Tells whether offset should be added or subtracted
+		uint32_t hasElements : 1;  // does the register have an array index
+		uint32_t emptyElement : 1;
+		uint32_t offsetRegUsed : 1;  // Is the offset register being used
 	} flags;
-	union {
+	union
+	{
 		enum Register reg;
 		enum BankedRegister regb;
 		enum SpecRegister regs;
@@ -855,7 +875,8 @@ struct InstructionOperand {
 	};
 	enum Register offset;
 	enum Shift shift;
-	union {
+	union
+	{
 		uint32_t imm;
 		double immd;
 		float immf;
@@ -863,7 +884,8 @@ struct InstructionOperand {
 	};
 };
 
-struct Instruction{
+struct Instruction
+{
 	enum Operation operation;
 	enum Condition cond;
 	enum DataType dataType;
@@ -873,61 +895,62 @@ struct Instruction{
 	struct InstructionOperand operands[MAX_OPERANDS];
 };
 
-typedef union _ieee754 {
+typedef union _ieee754
+{
 	uint32_t value;
-	struct {
-		uint32_t fraction:23;
-		uint32_t exponent:8;
-		uint32_t sign:1;
+	struct
+	{
+		uint32_t fraction : 23;
+		uint32_t exponent : 8;
+		uint32_t sign : 1;
 	};
 	float fvalue;
-}ieee754;
+} ieee754;
 
-typedef union _ieee754_double {
+typedef union _ieee754_double
+{
 	uint64_t value;
-	struct {
-		uint64_t fraction:52;
-		uint64_t exponent:11;
-		uint64_t sign:1;
+	struct
+	{
+		uint64_t fraction : 52;
+		uint64_t exponent : 11;
+		uint64_t sign : 1;
 	};
 	double fvalue;
-}ieee754_double;
+} ieee754_double;
 
 #ifndef __cplusplus
-	typedef enum OperandClass OperandClass;
-	typedef enum Operation Operation;
-	typedef enum Shift Shift;
-	typedef enum Condition Condition;
-	typedef enum Register Register;
-	typedef enum BankedRegister BankedRegister;
-	typedef enum SpecRegister SpecRegister;
-	typedef enum CoprocRegisterP CoprocRegisterP;
-	typedef enum CoprocRegisterC CoprocRegisterC;
-	typedef enum DataType DataType;
-	typedef enum Iflags Iflags;
-	typedef enum EndianSpec EndianSpec;
-	typedef enum DsbOption DsbOption;
-	typedef struct InstructionOperand InstructionOperand;
-	typedef struct Instruction Instruction;
+typedef enum OperandClass OperandClass;
+typedef enum Operation Operation;
+typedef enum Shift Shift;
+typedef enum Condition Condition;
+typedef enum Register Register;
+typedef enum BankedRegister BankedRegister;
+typedef enum SpecRegister SpecRegister;
+typedef enum CoprocRegisterP CoprocRegisterP;
+typedef enum CoprocRegisterC CoprocRegisterC;
+typedef enum DataType DataType;
+typedef enum Iflags Iflags;
+typedef enum EndianSpec EndianSpec;
+typedef enum DsbOption DsbOption;
+typedef struct InstructionOperand InstructionOperand;
+typedef struct Instruction Instruction;
 #endif
 
 #ifdef __cplusplus
-	extern "C" {
+extern "C"
+{
 #endif
-	uint32_t armv7_decompose(
-	        uint32_t instructionValue,
-	        Instruction* restrict instruction,
-	        uint32_t address,
-	        uint32_t littleEndian);
+	uint32_t armv7_decompose(uint32_t instructionValue, Instruction* restrict instruction,
+	    uint32_t address, uint32_t littleEndian);
 
 	uint32_t armv7_disassemble(
-			Instruction* restrict instruction,
-			char* outBuffer,
-			uint32_t outBufferSize);
+	    Instruction* restrict instruction, char* outBuffer, uint32_t outBufferSize);
 
-	//Helpers for disassembling the instruction operands to strings
+	// Helpers for disassembling the instruction operands to strings
 	const char* get_operation(Operation operation);
-	char* get_full_operation(char* outBuffer, size_t outBufferSize, Instruction* restrict instruction);
+	char* get_full_operation(
+	    char* outBuffer, size_t outBufferSize, Instruction* restrict instruction);
 	const char* get_vector_data_type(DataType dataType);
 	const char* get_register_name(Register reg);
 	const char* get_banked_register_name(BankedRegister regb);
@@ -942,9 +965,9 @@ typedef union _ieee754_double {
 	uint32_t get_register_size(Register reg);
 	uint32_t get_register_names(Register reg, const char** regNames, OperandClass type);
 #ifdef __cplusplus
-	} //end extern "C"
+}  // end extern "C"
 #endif
 
 #ifdef __cplusplus
-} //end namespace
+}  // end namespace
 #endif
