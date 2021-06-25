@@ -265,15 +265,15 @@ enum PeArmRelocationType : uint32_t
 	                                     // of two 16-bit instructions with 11-bit offsets.
 	PE_IMAGE_REL_ARM_SECTION = 0x000E,   // The 16-bit section index of the section that contains the
 	                                     // target. This is used to support debugging information.
-	PE_IMAGE_REL_ARM_SECREL =
-	    0x000F,  // The 32-bit offset of the target from the beginning of its section. This is used to
-	             // support debugging information and static thread local storage.
-	PE_IMAGE_REL_ARM_MOV32 =
-	    0x0010,  // The 32-bit VA of the target. This relocation is applied using a MOVW instruction
-	             // for the low 16 bits followed by a MOVT for the high 16 bits.
-	PE_IMAGE_REL_THUMB_MOV32 =
-	    0x0011,  // The 32-bit VA of the target. This relocation is applied using a MOVW instruction
-	             // for the low 16 bits followed by a MOVT for the high 16 bits.
+	PE_IMAGE_REL_ARM_SECREL = 0x000F,    // The 32-bit offset of the target from the beginning of its
+	                                     // section. This is used to support debugging information and
+	                                     // static thread local storage.
+	PE_IMAGE_REL_ARM_MOV32 = 0x0010,     // The 32-bit VA of the target. This relocation is applied
+	                                     // using a MOVW instruction for the low 16 bits followed by a
+	                                     // MOVT for the high 16 bits.
+	PE_IMAGE_REL_THUMB_MOV32 = 0x0011,   // The 32-bit VA of the target. This relocation is applied
+	                                     // using a MOVW instruction for the low 16 bits followed by a
+	                                     // MOVT for the high 16 bits.
 	PE_IMAGE_REL_THUMB_BRANCH20 =
 	    0x0012,  // The instruction is fixed up with the 21-bit relative displacement to the 2-byte
 	             // aligned target. The least significant bit of the displacement is always zero and
@@ -284,21 +284,21 @@ enum PeArmRelocationType : uint32_t
 	    0x0014,  // The instruction is fixed up with the 25-bit relative displacement to the 2-byte
 	             // aligned target. The least significant bit of the displacement is zero and is not
 	             // stored.This relocation corresponds to a Thumb-2 B instruction.
-	PE_IMAGE_REL_THUMB_BLX23 =
-	    0x0015,  // The instruction is fixed up with the 25-bit relative displacement to the 4-byte
-	             // aligned target. The low 2 bits of the displacement are zero and are not stored.
-	             // This relocation corresponds to a Thumb-2 BLX instruction.
-	PE_IMAGE_REL_ARM_PAIR = 0x0016,  // The relocation is valid only when it immediately follows a
-	                                 // ARM_REFHI or THUMB_REFHI. Its SymbolTableIndex contains a
-	                                 // displacement and not an index into the symbol table.
+	PE_IMAGE_REL_THUMB_BLX23 = 0x0015,  // The instruction is fixed up with the 25-bit relative
+	                                    // displacement to the 4-byte aligned target. The low 2 bits
+	                                    // of the displacement are zero and are not stored. This
+	                                    // relocation corresponds to a Thumb-2 BLX instruction.
+	PE_IMAGE_REL_ARM_PAIR = 0x0016,     // The relocation is valid only when it immediately follows a
+	                                    // ARM_REFHI or THUMB_REFHI. Its SymbolTableIndex contains a
+	                                    // displacement and not an index into the symbol table.
 	MAX_ARM_PE_RELOCATION
 };
 
 static const char* GetRelocationString(MachoArmRelocationType rel)
 {
-	static const char* relocTable[] = {"ARM_RELOC_VANILLA", "ARM_RELOC_PAIR", "ARM_RELOC_SECTDIFF",
-	    "ARM_RELOC_LOCAL_SECTDIFF", "ARM_RELOC_PB_LA_PTR", "ARM_RELOC_BR24", "ARM_THUMB_RELOC_BR22",
-	    "ARM_THUMB_32BIT_BRANCH", "ARM_RELOC_HALF", "ARM_RELOC_HALF_SECTDIFF"};
+	static const char* relocTable[] = { "ARM_RELOC_VANILLA", "ARM_RELOC_PAIR", "ARM_RELOC_SECTDIFF",
+		"ARM_RELOC_LOCAL_SECTDIFF", "ARM_RELOC_PB_LA_PTR", "ARM_RELOC_BR24", "ARM_THUMB_RELOC_BR22",
+		"ARM_THUMB_32BIT_BRANCH", "ARM_RELOC_HALF", "ARM_RELOC_HALF_SECTDIFF" };
 	if (rel < MACHO_MAX_ARM_RELOCATION)
 	{
 		return relocTable[rel];
@@ -309,73 +309,77 @@ static const char* GetRelocationString(MachoArmRelocationType rel)
 
 static const char* GetRelocationString(ElfArmRelocationType rel)
 {
-	static map<ElfArmRelocationType, const char*> relocTable = {{R_ARM_NONE, "R_ARM_NONE"},
-	    {R_ARM_PC24, "R_ARM_PC24"}, {R_ARM_ABS32, "R_ARM_ABS32"}, {R_ARM_REL32, "R_ARM_REL32"},
-	    {R_ARM_LDR_PC_G0, "R_ARM_LDR_PC_G0"}, {R_ARM_ABS16, "R_ARM_ABS16"},
-	    {R_ARM_ABS12, "R_ARM_ABS12"}, {R_ARM_THM_ABS5, "R_ARM_THM_ABS5"}, {R_ARM_ABS8, "R_ARM_ABS8"},
-	    {R_ARM_SBREL32, "R_ARM_SBREL32"}, {R_ARM_THM_CALL, "R_ARM_THM_CALL"},
-	    {R_ARM_THM_PC8, "R_ARM_THM_PC8"}, {R_ARM_BREL_ADJ, "R_ARM_BREL_ADJ"},
-	    {R_ARM_TLS_DESC, "R_ARM_TLS_DESC"}, {R_ARM_THM_SWI8, "R_ARM_THM_SWI8"},
-	    {R_ARM_XPC25, "R_ARM_XPC25"}, {R_ARM_THM_XPC22, "R_ARM_THM_XPC22"},
-	    {R_ARM_TLS_DTPMOD32, "R_ARM_TLS_DTPMOD32"}, {R_ARM_TLS_DTPOFF32, "R_ARM_TLS_DTPOFF32"},
-	    {R_ARM_TLS_TPOFF32, "R_ARM_TLS_TPOFF32"}, {R_ARM_COPY, "R_ARM_COPY"},
-	    {R_ARM_GLOB_DAT, "R_ARM_GLOB_DAT"}, {R_ARM_JUMP_SLOT, "R_ARM_JUMP_SLOT"},
-	    {R_ARM_RELATIVE, "R_ARM_RELATIVE"}, {R_ARM_GOTOFF32, "R_ARM_GOTOFF32"},
-	    {R_ARM_BASE_PREL, "R_ARM_BASE_PREL"}, {R_ARM_GOT_BREL, "R_ARM_GOT_BREL"},
-	    {R_ARM_PLT32, "R_ARM_PLT32"}, {R_ARM_CALL, "R_ARM_CALL"}, {R_ARM_JUMP24, "R_ARM_JUMP24"},
-	    {R_ARM_THM_JUMP24, "R_ARM_THM_JUMP24"}, {R_ARM_BASE_ABS, "R_ARM_BASE_ABS"},
-	    {R_ARM_ALU_PCREL_7_0, "R_ARM_ALU_PCREL_7_0"}, {R_ARM_ALU_PCREL_15_8, "R_ARM_ALU_PCREL_15_8"},
-	    {R_ARM_ALU_PCREL_23_15, "R_ARM_ALU_PCREL_23_15"},
-	    {R_ARM_LDR_SBREL_11_0_NC, "R_ARM_LDR_SBREL_11_0_NC"},
-	    {R_ARM_ALU_SBREL_19_12_NC, "R_ARM_ALU_SBREL_19_12_NC"},
-	    {R_ARM_ALU_SBREL_27_20_CK, "R_ARM_ALU_SBREL_27_20_CK"}, {R_ARM_TARGET1, "R_ARM_TARGET1"},
-	    {R_ARM_SBREL31, "R_ARM_SBREL31"}, {R_ARM_V4BX, "R_ARM_V4BX"},
-	    {R_ARM_TARGET2, "R_ARM_TARGET2"}, {R_ARM_PREL31, "R_ARM_PREL31"},
-	    {R_ARM_MOVW_ABS_NC, "R_ARM_MOVW_ABS_NC"}, {R_ARM_MOVT_ABS, "R_ARM_MOVT_ABS"},
-	    {R_ARM_MOVW_PREL_NC, "R_ARM_MOVW_PREL_NC"}, {R_ARM_MOVT_PREL, "R_ARM_MOVT_PREL"},
-	    {R_ARM_THM_MOVW_ABS_NC, "R_ARM_THM_MOVW_ABS_NC"}, {R_ARM_THM_MOVT_ABS, "R_ARM_THM_MOVT_ABS"},
-	    {R_ARM_THM_MOVW_PREL_NC, "R_ARM_THM_MOVW_PREL_NC"},
-	    {R_ARM_THM_MOVT_PREL, "R_ARM_THM_MOVT_PREL"}, {R_ARM_THM_JUMP19, "R_ARM_THM_JUMP19"},
-	    {R_ARM_THM_JUMP6, "R_ARM_THM_JUMP6"}, {R_ARM_THM_ALU_PREL_11_0, "R_ARM_THM_ALU_PREL_11_0"},
-	    {R_ARM_THM_PC12, "R_ARM_THM_PC12"}, {R_ARM_ABS32_NOI, "R_ARM_ABS32_NOI"},
-	    {R_ARM_REL32_NOI, "R_ARM_REL32_NOI"}, {R_ARM_ALU_PC_G0_NC, "R_ARM_ALU_PC_G0_NC"},
-	    {R_ARM_ALU_PC_G0, "R_ARM_ALU_PC_G0"}, {R_ARM_ALU_PC_G1_NC, "R_ARM_ALU_PC_G1_NC"},
-	    {R_ARM_ALU_PC_G1, "R_ARM_ALU_PC_G1"}, {R_ARM_ALU_PC_G2, "R_ARM_ALU_PC_G2"},
-	    {R_ARM_LDR_PC_G1, "R_ARM_LDR_PC_G1"}, {R_ARM_LDR_PC_G2, "R_ARM_LDR_PC_G2"},
-	    {R_ARM_LDRS_PC_G0, "R_ARM_LDRS_PC_G0"}, {R_ARM_LDRS_PC_G1, "R_ARM_LDRS_PC_G1"},
-	    {R_ARM_LDRS_PC_G2, "R_ARM_LDRS_PC_G2"}, {R_ARM_LDC_PC_G0, "R_ARM_LDC_PC_G0"},
-	    {R_ARM_LDC_PC_G1, "R_ARM_LDC_PC_G1"}, {R_ARM_LDC_PC_G2, "R_ARM_LDC_PC_G2"},
-	    {R_ARM_ALU_SB_G0_NC, "R_ARM_ALU_SB_G0_NC"}, {R_ARM_ALU_SB_G0, "R_ARM_ALU_SB_G0"},
-	    {R_ARM_ALU_SB_G1_NC, "R_ARM_ALU_SB_G1_NC"}, {R_ARM_ALU_SB_G1, "R_ARM_ALU_SB_G1"},
-	    {R_ARM_ALU_SB_G2, "R_ARM_ALU_SB_G2"}, {R_ARM_LDR_SB_G0, "R_ARM_LDR_SB_G0"},
-	    {R_ARM_LDR_SB_G1, "R_ARM_LDR_SB_G1"}, {R_ARM_LDR_SB_G2, "R_ARM_LDR_SB_G2"},
-	    {R_ARM_LDRS_SB_G0, "R_ARM_LDRS_SB_G0"}, {R_ARM_LDRS_SB_G1, "R_ARM_LDRS_SB_G1"},
-	    {R_ARM_LDRS_SB_G2, "R_ARM_LDRS_SB_G2"}, {R_ARM_LDC_SB_G0, "R_ARM_LDC_SB_G0"},
-	    {R_ARM_LDC_SB_G1, "R_ARM_LDC_SB_G1"}, {R_ARM_LDC_SB_G2, "R_ARM_LDC_SB_G2"},
-	    {R_ARM_MOVW_BREL_NC, "R_ARM_MOVW_BREL_NC"}, {R_ARM_MOVT_BREL, "R_ARM_MOVT_BREL"},
-	    {R_ARM_MOVW_BREL, "R_ARM_MOVW_BREL"}, {R_ARM_THM_MOVW_BREL_NC, "R_ARM_THM_MOVW_BREL_NC"},
-	    {R_ARM_THM_MOVT_BREL, "R_ARM_THM_MOVT_BREL"}, {R_ARM_THM_MOVW_BREL, "R_ARM_THM_MOVW_BREL"},
-	    {R_ARM_TLS_GOTDESC, "R_ARM_TLS_GOTDESC"}, {R_ARM_TLS_CALL, "R_ARM_TLS_CALL"},
-	    {R_ARM_TLS_DESCSEQ, "R_ARM_TLS_DESCSEQ"}, {R_ARM_THM_TLS_CALL, "R_ARM_THM_TLS_CALL"},
-	    {R_ARM_PLT32_ABS, "R_ARM_PLT32_ABS"}, {R_ARM_GOT_ABS, "R_ARM_GOT_ABS"},
-	    {R_ARM_GOT_PREL, "R_ARM_GOT_PREL"}, {R_ARM_GOT_BREL12, "R_ARM_GOT_BREL12"},
-	    {R_ARM_GOTOFF12, "R_ARM_GOTOFF12"}, {R_ARM_GOTRELAX, "R_ARM_GOTRELAX"},
-	    {R_ARM_GNU_VTENTRY, "R_ARM_GNU_VTENTRY"}, {R_ARM_GNU_VTINHERIT, "R_ARM_GNU_VTINHERIT"},
-	    {R_ARM_THM_JUMP11, "R_ARM_THM_JUMP11"}, {R_ARM_THM_JUMP8, "R_ARM_THM_JUMP8"},
-	    {R_ARM_TLS_GD32, "R_ARM_TLS_GD32"}, {R_ARM_TLS_LDM32, "R_ARM_TLS_LDM32"},
-	    {R_ARM_TLS_LDO32, "R_ARM_TLS_LDO32"}, {R_ARM_TLS_IE32, "R_ARM_TLS_IE32"},
-	    {R_ARM_TLS_LE32, "R_ARM_TLS_LE32"}, {R_ARM_TLS_LDO12, "R_ARM_TLS_LDO12"},
-	    {R_ARM_TLS_LE12, "R_ARM_TLS_LE12"}, {R_ARM_TLS_IE12GP, "R_ARM_TLS_IE12GP"},
-	    {R_ARM_ME_TOO, "R_ARM_ME_TOO"}, {R_ARM_THM_TLS_DESCSEQ16, "R_ARM_THM_TLS_DESCSEQ16"},
-	    {R_ARM_THM_TLS_DESCSEQ32, "R_ARM_THM_TLS_DESCSEQ32"},
-	    {R_ARM_THM_GOT_BREL12, "R_ARM_THM_GOT_BREL12"},
-	    {R_ARM_THM_ALU_ABS_G0_NC, "R_ARM_THM_ALU_ABS_G0_NC"},
-	    {R_ARM_THM_ALU_ABS_G1_NC, "R_ARM_THM_ALU_ABS_G1_NC"},
-	    {R_ARM_THM_ALU_ABS_G2_NC, "R_ARM_THM_ALU_ABS_G2_NC"},
-	    {R_ARM_THM_ALU_ABS_G3, "R_ARM_THM_ALU_ABS_G3"}, {R_ARM_IRELATIVE, "R_ARM_IRELATIVE"},
-	    {R_ARM_RXPC25, "R_ARM_RXPC25"}, {R_ARM_RSBREL32, "R_ARM_RSBREL32"},
-	    {R_ARM_THM_RPC22, "R_ARM_THM_RPC22"}, {R_ARM_RREL32, "R_ARM_RREL32"},
-	    {R_ARM_RABS32, "R_ARM_RABS32"}, {R_ARM_RPC24, "R_ARM_RPC24"}, {R_ARM_RBASE, "R_ARM_RBASE"}};
+	static map<ElfArmRelocationType, const char*> relocTable = { { R_ARM_NONE, "R_ARM_NONE" },
+		{ R_ARM_PC24, "R_ARM_PC24" }, { R_ARM_ABS32, "R_ARM_ABS32" }, { R_ARM_REL32, "R_ARM_REL32" },
+		{ R_ARM_LDR_PC_G0, "R_ARM_LDR_PC_G0" }, { R_ARM_ABS16, "R_ARM_ABS16" },
+		{ R_ARM_ABS12, "R_ARM_ABS12" }, { R_ARM_THM_ABS5, "R_ARM_THM_ABS5" },
+		{ R_ARM_ABS8, "R_ARM_ABS8" }, { R_ARM_SBREL32, "R_ARM_SBREL32" },
+		{ R_ARM_THM_CALL, "R_ARM_THM_CALL" }, { R_ARM_THM_PC8, "R_ARM_THM_PC8" },
+		{ R_ARM_BREL_ADJ, "R_ARM_BREL_ADJ" }, { R_ARM_TLS_DESC, "R_ARM_TLS_DESC" },
+		{ R_ARM_THM_SWI8, "R_ARM_THM_SWI8" }, { R_ARM_XPC25, "R_ARM_XPC25" },
+		{ R_ARM_THM_XPC22, "R_ARM_THM_XPC22" }, { R_ARM_TLS_DTPMOD32, "R_ARM_TLS_DTPMOD32" },
+		{ R_ARM_TLS_DTPOFF32, "R_ARM_TLS_DTPOFF32" }, { R_ARM_TLS_TPOFF32, "R_ARM_TLS_TPOFF32" },
+		{ R_ARM_COPY, "R_ARM_COPY" }, { R_ARM_GLOB_DAT, "R_ARM_GLOB_DAT" },
+		{ R_ARM_JUMP_SLOT, "R_ARM_JUMP_SLOT" }, { R_ARM_RELATIVE, "R_ARM_RELATIVE" },
+		{ R_ARM_GOTOFF32, "R_ARM_GOTOFF32" }, { R_ARM_BASE_PREL, "R_ARM_BASE_PREL" },
+		{ R_ARM_GOT_BREL, "R_ARM_GOT_BREL" }, { R_ARM_PLT32, "R_ARM_PLT32" },
+		{ R_ARM_CALL, "R_ARM_CALL" }, { R_ARM_JUMP24, "R_ARM_JUMP24" },
+		{ R_ARM_THM_JUMP24, "R_ARM_THM_JUMP24" }, { R_ARM_BASE_ABS, "R_ARM_BASE_ABS" },
+		{ R_ARM_ALU_PCREL_7_0, "R_ARM_ALU_PCREL_7_0" },
+		{ R_ARM_ALU_PCREL_15_8, "R_ARM_ALU_PCREL_15_8" },
+		{ R_ARM_ALU_PCREL_23_15, "R_ARM_ALU_PCREL_23_15" },
+		{ R_ARM_LDR_SBREL_11_0_NC, "R_ARM_LDR_SBREL_11_0_NC" },
+		{ R_ARM_ALU_SBREL_19_12_NC, "R_ARM_ALU_SBREL_19_12_NC" },
+		{ R_ARM_ALU_SBREL_27_20_CK, "R_ARM_ALU_SBREL_27_20_CK" }, { R_ARM_TARGET1, "R_ARM_TARGET1" },
+		{ R_ARM_SBREL31, "R_ARM_SBREL31" }, { R_ARM_V4BX, "R_ARM_V4BX" },
+		{ R_ARM_TARGET2, "R_ARM_TARGET2" }, { R_ARM_PREL31, "R_ARM_PREL31" },
+		{ R_ARM_MOVW_ABS_NC, "R_ARM_MOVW_ABS_NC" }, { R_ARM_MOVT_ABS, "R_ARM_MOVT_ABS" },
+		{ R_ARM_MOVW_PREL_NC, "R_ARM_MOVW_PREL_NC" }, { R_ARM_MOVT_PREL, "R_ARM_MOVT_PREL" },
+		{ R_ARM_THM_MOVW_ABS_NC, "R_ARM_THM_MOVW_ABS_NC" },
+		{ R_ARM_THM_MOVT_ABS, "R_ARM_THM_MOVT_ABS" },
+		{ R_ARM_THM_MOVW_PREL_NC, "R_ARM_THM_MOVW_PREL_NC" },
+		{ R_ARM_THM_MOVT_PREL, "R_ARM_THM_MOVT_PREL" }, { R_ARM_THM_JUMP19, "R_ARM_THM_JUMP19" },
+		{ R_ARM_THM_JUMP6, "R_ARM_THM_JUMP6" }, { R_ARM_THM_ALU_PREL_11_0, "R_ARM_THM_ALU_PREL_11_0" },
+		{ R_ARM_THM_PC12, "R_ARM_THM_PC12" }, { R_ARM_ABS32_NOI, "R_ARM_ABS32_NOI" },
+		{ R_ARM_REL32_NOI, "R_ARM_REL32_NOI" }, { R_ARM_ALU_PC_G0_NC, "R_ARM_ALU_PC_G0_NC" },
+		{ R_ARM_ALU_PC_G0, "R_ARM_ALU_PC_G0" }, { R_ARM_ALU_PC_G1_NC, "R_ARM_ALU_PC_G1_NC" },
+		{ R_ARM_ALU_PC_G1, "R_ARM_ALU_PC_G1" }, { R_ARM_ALU_PC_G2, "R_ARM_ALU_PC_G2" },
+		{ R_ARM_LDR_PC_G1, "R_ARM_LDR_PC_G1" }, { R_ARM_LDR_PC_G2, "R_ARM_LDR_PC_G2" },
+		{ R_ARM_LDRS_PC_G0, "R_ARM_LDRS_PC_G0" }, { R_ARM_LDRS_PC_G1, "R_ARM_LDRS_PC_G1" },
+		{ R_ARM_LDRS_PC_G2, "R_ARM_LDRS_PC_G2" }, { R_ARM_LDC_PC_G0, "R_ARM_LDC_PC_G0" },
+		{ R_ARM_LDC_PC_G1, "R_ARM_LDC_PC_G1" }, { R_ARM_LDC_PC_G2, "R_ARM_LDC_PC_G2" },
+		{ R_ARM_ALU_SB_G0_NC, "R_ARM_ALU_SB_G0_NC" }, { R_ARM_ALU_SB_G0, "R_ARM_ALU_SB_G0" },
+		{ R_ARM_ALU_SB_G1_NC, "R_ARM_ALU_SB_G1_NC" }, { R_ARM_ALU_SB_G1, "R_ARM_ALU_SB_G1" },
+		{ R_ARM_ALU_SB_G2, "R_ARM_ALU_SB_G2" }, { R_ARM_LDR_SB_G0, "R_ARM_LDR_SB_G0" },
+		{ R_ARM_LDR_SB_G1, "R_ARM_LDR_SB_G1" }, { R_ARM_LDR_SB_G2, "R_ARM_LDR_SB_G2" },
+		{ R_ARM_LDRS_SB_G0, "R_ARM_LDRS_SB_G0" }, { R_ARM_LDRS_SB_G1, "R_ARM_LDRS_SB_G1" },
+		{ R_ARM_LDRS_SB_G2, "R_ARM_LDRS_SB_G2" }, { R_ARM_LDC_SB_G0, "R_ARM_LDC_SB_G0" },
+		{ R_ARM_LDC_SB_G1, "R_ARM_LDC_SB_G1" }, { R_ARM_LDC_SB_G2, "R_ARM_LDC_SB_G2" },
+		{ R_ARM_MOVW_BREL_NC, "R_ARM_MOVW_BREL_NC" }, { R_ARM_MOVT_BREL, "R_ARM_MOVT_BREL" },
+		{ R_ARM_MOVW_BREL, "R_ARM_MOVW_BREL" }, { R_ARM_THM_MOVW_BREL_NC, "R_ARM_THM_MOVW_BREL_NC" },
+		{ R_ARM_THM_MOVT_BREL, "R_ARM_THM_MOVT_BREL" }, { R_ARM_THM_MOVW_BREL, "R_ARM_THM_MOVW_BREL" },
+		{ R_ARM_TLS_GOTDESC, "R_ARM_TLS_GOTDESC" }, { R_ARM_TLS_CALL, "R_ARM_TLS_CALL" },
+		{ R_ARM_TLS_DESCSEQ, "R_ARM_TLS_DESCSEQ" }, { R_ARM_THM_TLS_CALL, "R_ARM_THM_TLS_CALL" },
+		{ R_ARM_PLT32_ABS, "R_ARM_PLT32_ABS" }, { R_ARM_GOT_ABS, "R_ARM_GOT_ABS" },
+		{ R_ARM_GOT_PREL, "R_ARM_GOT_PREL" }, { R_ARM_GOT_BREL12, "R_ARM_GOT_BREL12" },
+		{ R_ARM_GOTOFF12, "R_ARM_GOTOFF12" }, { R_ARM_GOTRELAX, "R_ARM_GOTRELAX" },
+		{ R_ARM_GNU_VTENTRY, "R_ARM_GNU_VTENTRY" }, { R_ARM_GNU_VTINHERIT, "R_ARM_GNU_VTINHERIT" },
+		{ R_ARM_THM_JUMP11, "R_ARM_THM_JUMP11" }, { R_ARM_THM_JUMP8, "R_ARM_THM_JUMP8" },
+		{ R_ARM_TLS_GD32, "R_ARM_TLS_GD32" }, { R_ARM_TLS_LDM32, "R_ARM_TLS_LDM32" },
+		{ R_ARM_TLS_LDO32, "R_ARM_TLS_LDO32" }, { R_ARM_TLS_IE32, "R_ARM_TLS_IE32" },
+		{ R_ARM_TLS_LE32, "R_ARM_TLS_LE32" }, { R_ARM_TLS_LDO12, "R_ARM_TLS_LDO12" },
+		{ R_ARM_TLS_LE12, "R_ARM_TLS_LE12" }, { R_ARM_TLS_IE12GP, "R_ARM_TLS_IE12GP" },
+		{ R_ARM_ME_TOO, "R_ARM_ME_TOO" }, { R_ARM_THM_TLS_DESCSEQ16, "R_ARM_THM_TLS_DESCSEQ16" },
+		{ R_ARM_THM_TLS_DESCSEQ32, "R_ARM_THM_TLS_DESCSEQ32" },
+		{ R_ARM_THM_GOT_BREL12, "R_ARM_THM_GOT_BREL12" },
+		{ R_ARM_THM_ALU_ABS_G0_NC, "R_ARM_THM_ALU_ABS_G0_NC" },
+		{ R_ARM_THM_ALU_ABS_G1_NC, "R_ARM_THM_ALU_ABS_G1_NC" },
+		{ R_ARM_THM_ALU_ABS_G2_NC, "R_ARM_THM_ALU_ABS_G2_NC" },
+		{ R_ARM_THM_ALU_ABS_G3, "R_ARM_THM_ALU_ABS_G3" }, { R_ARM_IRELATIVE, "R_ARM_IRELATIVE" },
+		{ R_ARM_RXPC25, "R_ARM_RXPC25" }, { R_ARM_RSBREL32, "R_ARM_RSBREL32" },
+		{ R_ARM_THM_RPC22, "R_ARM_THM_RPC22" }, { R_ARM_RREL32, "R_ARM_RREL32" },
+		{ R_ARM_RABS32, "R_ARM_RABS32" }, { R_ARM_RPC24, "R_ARM_RPC24" },
+		{ R_ARM_RBASE, "R_ARM_RBASE" } };
 	if (relocTable.count(rel))
 		return relocTable.at(rel);
 	return "Unknown ARM relocation";
@@ -384,11 +388,11 @@ static const char* GetRelocationString(ElfArmRelocationType rel)
 
 static const char* GetRelocationString(PeArmRelocationType rel)
 {
-	static const char* relocTable[] = {"IMAGE_REL_ARM_ABSOLUTE", "IMAGE_REL_ARM_ADDR32",
-	    "IMAGE_REL_ARM_ADDR32NB", "IMAGE_REL_ARM_BRANCH24", "IMAGE_REL_ARM_BRANCH11",
-	    "IMAGE_REL_ARM_SECTION", "IMAGE_REL_ARM_SECREL", "IMAGE_REL_ARM_MOV32",
-	    "IMAGE_REL_THUMB_MOV32", "IMAGE_REL_THUMB_BRANCH20", "IMAGE_REL_THUMB_UNUSED",
-	    "IMAGE_REL_THUMB_BRANCH24", "IMAGE_REL_THUMB_BLX23", "IMAGE_REL_ARM_PAIR"};
+	static const char* relocTable[] = { "IMAGE_REL_ARM_ABSOLUTE", "IMAGE_REL_ARM_ADDR32",
+		"IMAGE_REL_ARM_ADDR32NB", "IMAGE_REL_ARM_BRANCH24", "IMAGE_REL_ARM_BRANCH11",
+		"IMAGE_REL_ARM_SECTION", "IMAGE_REL_ARM_SECREL", "IMAGE_REL_ARM_MOV32", "IMAGE_REL_THUMB_MOV32",
+		"IMAGE_REL_THUMB_BRANCH20", "IMAGE_REL_THUMB_UNUSED", "IMAGE_REL_THUMB_BRANCH24",
+		"IMAGE_REL_THUMB_BLX23", "IMAGE_REL_ARM_PAIR" };
 	if (rel < MAX_ARM_PE_RELOCATION)
 		return relocTable[rel];
 	return "Unknown ARM relocation";
@@ -396,49 +400,50 @@ static const char* GetRelocationString(PeArmRelocationType rel)
 
 static bool IsELFDataRelocation(ElfArmRelocationType reloc)
 {
-	map<ElfArmRelocationType, bool> isDataMap = {{R_ARM_NONE, false}, {R_ARM_PC24, false},
-	    {R_ARM_ABS32, true}, {R_ARM_REL32, true}, {R_ARM_LDR_PC_G0, false}, {R_ARM_ABS16, true},
-	    {R_ARM_ABS12, false}, {R_ARM_THM_ABS5, false}, {R_ARM_ABS8, true}, {R_ARM_SBREL32, true},
-	    {R_ARM_THM_CALL, false}, {R_ARM_THM_PC8, false}, {R_ARM_BREL_ADJ, true},
-	    {R_ARM_TLS_DESC, true}, {R_ARM_THM_SWI8, false}, {R_ARM_XPC25, false},
-	    {R_ARM_THM_XPC22, false}, {R_ARM_TLS_DTPMOD32, true}, {R_ARM_TLS_DTPOFF32, true},
-	    {R_ARM_TLS_TPOFF32, true}, {R_ARM_COPY, true}, {R_ARM_GLOB_DAT, true},
-	    {R_ARM_JUMP_SLOT, true}, {R_ARM_RELATIVE, true}, {R_ARM_GOTOFF32, true},
-	    {R_ARM_BASE_PREL, true}, {R_ARM_GOT_BREL, true}, {R_ARM_PLT32, false}, {R_ARM_CALL, false},
-	    {R_ARM_JUMP24, false}, {R_ARM_THM_JUMP24, false}, {R_ARM_BASE_ABS, true},
-	    {R_ARM_ALU_PCREL_7_0, false}, {R_ARM_ALU_PCREL_15_8, false}, {R_ARM_ALU_PCREL_23_15, false},
-	    {R_ARM_LDR_SBREL_11_0_NC, false}, {R_ARM_ALU_SBREL_19_12_NC, false},
-	    {R_ARM_ALU_SBREL_27_20_CK, false}, {R_ARM_TARGET1, false}, {R_ARM_SBREL31, true},
-	    {R_ARM_V4BX, false}, {R_ARM_TARGET2, false}, {R_ARM_PREL31, true}, {R_ARM_MOVW_ABS_NC, false},
-	    {R_ARM_MOVT_ABS, false}, {R_ARM_MOVW_PREL_NC, false}, {R_ARM_MOVT_PREL, false},
-	    {R_ARM_THM_MOVW_ABS_NC, false}, {R_ARM_THM_MOVT_ABS, false}, {R_ARM_THM_MOVW_PREL_NC, false},
-	    {R_ARM_THM_MOVT_PREL, false}, {R_ARM_THM_JUMP19, false}, {R_ARM_THM_JUMP6, false},
-	    {R_ARM_THM_ALU_PREL_11_0, false}, {R_ARM_THM_PC12, false}, {R_ARM_ABS32_NOI, true},
-	    {R_ARM_REL32_NOI, true}, {R_ARM_ALU_PC_G0_NC, false}, {R_ARM_ALU_PC_G0, false},
-	    {R_ARM_ALU_PC_G1_NC, false}, {R_ARM_ALU_PC_G1, false}, {R_ARM_ALU_PC_G2, false},
-	    {R_ARM_LDR_PC_G1, false}, {R_ARM_LDR_PC_G2, false}, {R_ARM_LDRS_PC_G0, false},
-	    {R_ARM_LDRS_PC_G1, false}, {R_ARM_LDRS_PC_G2, false}, {R_ARM_LDC_PC_G0, false},
-	    {R_ARM_LDC_PC_G1, false}, {R_ARM_LDC_PC_G2, false}, {R_ARM_ALU_SB_G0_NC, false},
-	    {R_ARM_ALU_SB_G0, false}, {R_ARM_ALU_SB_G1_NC, false}, {R_ARM_ALU_SB_G1, false},
-	    {R_ARM_ALU_SB_G2, false}, {R_ARM_LDR_SB_G0, false}, {R_ARM_LDR_SB_G1, false},
-	    {R_ARM_LDR_SB_G2, false}, {R_ARM_LDRS_SB_G0, false}, {R_ARM_LDRS_SB_G1, false},
-	    {R_ARM_LDRS_SB_G2, false}, {R_ARM_LDC_SB_G0, false}, {R_ARM_LDC_SB_G1, false},
-	    {R_ARM_LDC_SB_G2, false}, {R_ARM_MOVW_BREL_NC, false}, {R_ARM_MOVT_BREL, false},
-	    {R_ARM_MOVW_BREL, false}, {R_ARM_THM_MOVW_BREL_NC, false}, {R_ARM_THM_MOVT_BREL, false},
-	    {R_ARM_THM_MOVW_BREL, false}, {R_ARM_TLS_GOTDESC, true}, {R_ARM_TLS_CALL, false},
-	    {R_ARM_TLS_DESCSEQ, false}, {R_ARM_THM_TLS_CALL, false}, {R_ARM_PLT32_ABS, true},
-	    {R_ARM_GOT_ABS, true}, {R_ARM_GOT_PREL, true}, {R_ARM_GOT_BREL12, false},
-	    {R_ARM_GOTOFF12, false}, {R_ARM_GOTRELAX, false}, {R_ARM_GNU_VTENTRY, true},
-	    {R_ARM_GNU_VTINHERIT, true}, {R_ARM_THM_JUMP11, false}, {R_ARM_THM_JUMP8, false},
-	    {R_ARM_TLS_GD32, true}, {R_ARM_TLS_LDM32, true}, {R_ARM_TLS_LDO32, true},
-	    {R_ARM_TLS_IE32, true}, {R_ARM_TLS_LE32, false}, {R_ARM_TLS_LDO12, false},
-	    {R_ARM_TLS_LE12, false}, {R_ARM_TLS_IE12GP, false}, {R_ARM_ME_TOO, false},
-	    {R_ARM_THM_TLS_DESCSEQ16, false}, {R_ARM_THM_TLS_DESCSEQ32, false},
-	    {R_ARM_THM_GOT_BREL12, false}, {R_ARM_THM_ALU_ABS_G0_NC, false},
-	    {R_ARM_THM_ALU_ABS_G1_NC, false}, {R_ARM_THM_ALU_ABS_G2_NC, false},
-	    {R_ARM_THM_ALU_ABS_G3, false}, {R_ARM_IRELATIVE, false}, {R_ARM_RXPC25, false},
-	    {R_ARM_RSBREL32, false}, {R_ARM_THM_RPC22, false}, {R_ARM_RREL32, false},
-	    {R_ARM_RABS32, false}, {R_ARM_RPC24, false}, {R_ARM_RBASE, false}};
+	map<ElfArmRelocationType, bool> isDataMap = { { R_ARM_NONE, false }, { R_ARM_PC24, false },
+		{ R_ARM_ABS32, true }, { R_ARM_REL32, true }, { R_ARM_LDR_PC_G0, false }, { R_ARM_ABS16, true },
+		{ R_ARM_ABS12, false }, { R_ARM_THM_ABS5, false }, { R_ARM_ABS8, true },
+		{ R_ARM_SBREL32, true }, { R_ARM_THM_CALL, false }, { R_ARM_THM_PC8, false },
+		{ R_ARM_BREL_ADJ, true }, { R_ARM_TLS_DESC, true }, { R_ARM_THM_SWI8, false },
+		{ R_ARM_XPC25, false }, { R_ARM_THM_XPC22, false }, { R_ARM_TLS_DTPMOD32, true },
+		{ R_ARM_TLS_DTPOFF32, true }, { R_ARM_TLS_TPOFF32, true }, { R_ARM_COPY, true },
+		{ R_ARM_GLOB_DAT, true }, { R_ARM_JUMP_SLOT, true }, { R_ARM_RELATIVE, true },
+		{ R_ARM_GOTOFF32, true }, { R_ARM_BASE_PREL, true }, { R_ARM_GOT_BREL, true },
+		{ R_ARM_PLT32, false }, { R_ARM_CALL, false }, { R_ARM_JUMP24, false },
+		{ R_ARM_THM_JUMP24, false }, { R_ARM_BASE_ABS, true }, { R_ARM_ALU_PCREL_7_0, false },
+		{ R_ARM_ALU_PCREL_15_8, false }, { R_ARM_ALU_PCREL_23_15, false },
+		{ R_ARM_LDR_SBREL_11_0_NC, false }, { R_ARM_ALU_SBREL_19_12_NC, false },
+		{ R_ARM_ALU_SBREL_27_20_CK, false }, { R_ARM_TARGET1, false }, { R_ARM_SBREL31, true },
+		{ R_ARM_V4BX, false }, { R_ARM_TARGET2, false }, { R_ARM_PREL31, true },
+		{ R_ARM_MOVW_ABS_NC, false }, { R_ARM_MOVT_ABS, false }, { R_ARM_MOVW_PREL_NC, false },
+		{ R_ARM_MOVT_PREL, false }, { R_ARM_THM_MOVW_ABS_NC, false }, { R_ARM_THM_MOVT_ABS, false },
+		{ R_ARM_THM_MOVW_PREL_NC, false }, { R_ARM_THM_MOVT_PREL, false }, { R_ARM_THM_JUMP19, false },
+		{ R_ARM_THM_JUMP6, false }, { R_ARM_THM_ALU_PREL_11_0, false }, { R_ARM_THM_PC12, false },
+		{ R_ARM_ABS32_NOI, true }, { R_ARM_REL32_NOI, true }, { R_ARM_ALU_PC_G0_NC, false },
+		{ R_ARM_ALU_PC_G0, false }, { R_ARM_ALU_PC_G1_NC, false }, { R_ARM_ALU_PC_G1, false },
+		{ R_ARM_ALU_PC_G2, false }, { R_ARM_LDR_PC_G1, false }, { R_ARM_LDR_PC_G2, false },
+		{ R_ARM_LDRS_PC_G0, false }, { R_ARM_LDRS_PC_G1, false }, { R_ARM_LDRS_PC_G2, false },
+		{ R_ARM_LDC_PC_G0, false }, { R_ARM_LDC_PC_G1, false }, { R_ARM_LDC_PC_G2, false },
+		{ R_ARM_ALU_SB_G0_NC, false }, { R_ARM_ALU_SB_G0, false }, { R_ARM_ALU_SB_G1_NC, false },
+		{ R_ARM_ALU_SB_G1, false }, { R_ARM_ALU_SB_G2, false }, { R_ARM_LDR_SB_G0, false },
+		{ R_ARM_LDR_SB_G1, false }, { R_ARM_LDR_SB_G2, false }, { R_ARM_LDRS_SB_G0, false },
+		{ R_ARM_LDRS_SB_G1, false }, { R_ARM_LDRS_SB_G2, false }, { R_ARM_LDC_SB_G0, false },
+		{ R_ARM_LDC_SB_G1, false }, { R_ARM_LDC_SB_G2, false }, { R_ARM_MOVW_BREL_NC, false },
+		{ R_ARM_MOVT_BREL, false }, { R_ARM_MOVW_BREL, false }, { R_ARM_THM_MOVW_BREL_NC, false },
+		{ R_ARM_THM_MOVT_BREL, false }, { R_ARM_THM_MOVW_BREL, false }, { R_ARM_TLS_GOTDESC, true },
+		{ R_ARM_TLS_CALL, false }, { R_ARM_TLS_DESCSEQ, false }, { R_ARM_THM_TLS_CALL, false },
+		{ R_ARM_PLT32_ABS, true }, { R_ARM_GOT_ABS, true }, { R_ARM_GOT_PREL, true },
+		{ R_ARM_GOT_BREL12, false }, { R_ARM_GOTOFF12, false }, { R_ARM_GOTRELAX, false },
+		{ R_ARM_GNU_VTENTRY, true }, { R_ARM_GNU_VTINHERIT, true }, { R_ARM_THM_JUMP11, false },
+		{ R_ARM_THM_JUMP8, false }, { R_ARM_TLS_GD32, true }, { R_ARM_TLS_LDM32, true },
+		{ R_ARM_TLS_LDO32, true }, { R_ARM_TLS_IE32, true }, { R_ARM_TLS_LE32, false },
+		{ R_ARM_TLS_LDO12, false }, { R_ARM_TLS_LE12, false }, { R_ARM_TLS_IE12GP, false },
+		{ R_ARM_ME_TOO, false }, { R_ARM_THM_TLS_DESCSEQ16, false }, { R_ARM_THM_TLS_DESCSEQ32, false },
+		{ R_ARM_THM_GOT_BREL12, false }, { R_ARM_THM_ALU_ABS_G0_NC, false },
+		{ R_ARM_THM_ALU_ABS_G1_NC, false }, { R_ARM_THM_ALU_ABS_G2_NC, false },
+		{ R_ARM_THM_ALU_ABS_G3, false }, { R_ARM_IRELATIVE, false }, { R_ARM_RXPC25, false },
+		{ R_ARM_RSBREL32, false }, { R_ARM_THM_RPC22, false }, { R_ARM_RREL32, false },
+		{ R_ARM_RABS32, false }, { R_ARM_RPC24, false }, { R_ARM_RBASE, false } };
 	if (!isDataMap.count(reloc))
 		return false;
 	return isDataMap.at(reloc);
@@ -605,7 +610,7 @@ class Armv7Architecture : public ArmCommonArchitecture
 
 	uint32_t tokenize_shift(const InstructionOperand& op, vector<InstructionTextToken>& result)
 	{
-		char operand[64] = {0};
+		char operand[64] = { 0 };
 		if (op.shift != SHIFT_NONE)
 		{
 			const char* shiftStr = get_shift(op.shift);
@@ -624,7 +629,7 @@ class Armv7Architecture : public ArmCommonArchitecture
 	void tokenize_shifted_immediate(
 	    const InstructionOperand& op, vector<InstructionTextToken>& result)
 	{
-		char operand[64] = {0};
+		char operand[64] = { 0 };
 		const char* sign = "";
 		switch (op.cls)
 		{
@@ -715,7 +720,7 @@ class Armv7Architecture : public ArmCommonArchitecture
 			}
 		};
 
-		for (bool condValid[2] = {true, true};
+		for (bool condValid[2] = { true, true };
 		     (disassembled < remaining) && (condValid[0] || condValid[1]); disassembled++)
 		{
 			size_t consumed = disassembled * 4;
@@ -893,7 +898,7 @@ class Armv7Architecture : public ArmCommonArchitecture
 	    const InstructionOperand& op, vector<InstructionTextToken>& result)
 	{
 		char operand[32];
-		const char* neg[2] = {"-", ""};
+		const char* neg[2] = { "-", "" };
 		snprintf(operand, sizeof(operand), "%s%#x", neg[op.flags.add == 1], (uint32_t)op.imm);
 		result.emplace_back(TextToken, " #");
 		result.emplace_back(IntegerToken, operand, op.imm);
@@ -905,9 +910,9 @@ class Armv7Architecture : public ArmCommonArchitecture
 		Instruction instr;
 		char padding[9];
 
-		const char* neg[2] = {"-", ""};
-		const char* wb[2] = {"", "!"};
-		const char* crt[2] = {"", " ^"};
+		const char* neg[2] = { "-", "" };
+		const char* wb[2] = { "", "!" };
+		const char* crt[2] = { "", " ^" };
 		bool first = true;
 		char tmpOperand[256];
 
@@ -1181,10 +1186,10 @@ class Armv7Architecture : public ArmCommonArchitecture
 	virtual vector<uint32_t> GetAllIntrinsics() override
 	{
 		return vector<uint32_t> {
-		    ARMV7_INTRIN_COPROC_GETONEWORD,
-		    ARMV7_INTRIN_COPROC_GETTWOWORDS,
-		    ARMV7_INTRIN_COPROC_SENDONEWORD,
-		    ARMV7_INTRIN_COPROC_SENDTWOWORDS,
+			ARMV7_INTRIN_COPROC_GETONEWORD,
+			ARMV7_INTRIN_COPROC_GETTWOWORDS,
+			ARMV7_INTRIN_COPROC_SENDONEWORD,
+			ARMV7_INTRIN_COPROC_SENDTWOWORDS,
 		};
 	}
 
@@ -1194,34 +1199,34 @@ class Armv7Architecture : public ArmCommonArchitecture
 		{
 		case ARMV7_INTRIN_COPROC_GETONEWORD:
 			return {
-			    NameAndType("cp", Type::IntegerType(1, false)),
-			    NameAndType(Type::IntegerType(1, false)),
-			    NameAndType("n", Type::IntegerType(1, false)),
-			    NameAndType("m", Type::IntegerType(1, false)),
-			    NameAndType(Type::IntegerType(1, false)),
+				NameAndType("cp", Type::IntegerType(1, false)),
+				NameAndType(Type::IntegerType(1, false)),
+				NameAndType("n", Type::IntegerType(1, false)),
+				NameAndType("m", Type::IntegerType(1, false)),
+				NameAndType(Type::IntegerType(1, false)),
 			};
 		case ARMV7_INTRIN_COPROC_GETTWOWORDS:
 			return {
-			    NameAndType("cp", Type::IntegerType(1, false)),
-			    NameAndType(Type::IntegerType(1, false)),
-			    NameAndType("m", Type::IntegerType(1, false)),
+				NameAndType("cp", Type::IntegerType(1, false)),
+				NameAndType(Type::IntegerType(1, false)),
+				NameAndType("m", Type::IntegerType(1, false)),
 			};
 		case ARMV7_INTRIN_COPROC_SENDONEWORD:
 			return {
-			    NameAndType(Type::IntegerType(4, false)),
-			    NameAndType("cp", Type::IntegerType(1, false)),
-			    NameAndType(Type::IntegerType(1, false)),
-			    NameAndType("n", Type::IntegerType(1, false)),
-			    NameAndType("m", Type::IntegerType(1, false)),
-			    NameAndType(Type::IntegerType(1, false)),
+				NameAndType(Type::IntegerType(4, false)),
+				NameAndType("cp", Type::IntegerType(1, false)),
+				NameAndType(Type::IntegerType(1, false)),
+				NameAndType("n", Type::IntegerType(1, false)),
+				NameAndType("m", Type::IntegerType(1, false)),
+				NameAndType(Type::IntegerType(1, false)),
 			};
 		case ARMV7_INTRIN_COPROC_SENDTWOWORDS:
 			return {
-			    NameAndType(Type::IntegerType(4, false)),
-			    NameAndType(Type::IntegerType(4, false)),
-			    NameAndType("cp", Type::IntegerType(1, false)),
-			    NameAndType(Type::IntegerType(1, false)),
-			    NameAndType("m", Type::IntegerType(1, false)),
+				NameAndType(Type::IntegerType(4, false)),
+				NameAndType(Type::IntegerType(4, false)),
+				NameAndType("cp", Type::IntegerType(1, false)),
+				NameAndType(Type::IntegerType(1, false)),
+				NameAndType("m", Type::IntegerType(1, false)),
 			};
 		default:
 			return vector<NameAndType>();
@@ -1233,9 +1238,9 @@ class Armv7Architecture : public ArmCommonArchitecture
 		switch (intrinsic)
 		{
 		case ARMV7_INTRIN_COPROC_GETONEWORD:
-			return {Type::IntegerType(4, false)};
+			return { Type::IntegerType(4, false) };
 		case ARMV7_INTRIN_COPROC_GETTWOWORDS:
-			return {Type::IntegerType(4, false), Type::IntegerType(4, false)};
+			return { Type::IntegerType(4, false), Type::IntegerType(4, false) };
 		default:
 			return vector<Confidence<Ref<Type>>>();
 		}
@@ -1482,9 +1487,9 @@ vector<uint32_t> ArmCommonArchitecture::GetFlagsWrittenByFlagWriteType(uint32_t 
 	switch (flags)
 	{
 	case IL_FLAGWRITE_ALL:
-		return vector<uint32_t> {IL_FLAG_N, IL_FLAG_Z, IL_FLAG_C, IL_FLAG_V};
+		return vector<uint32_t> { IL_FLAG_N, IL_FLAG_Z, IL_FLAG_C, IL_FLAG_V };
 	case IL_FLAGWRITE_NZ:
-		return vector<uint32_t> {IL_FLAG_N, IL_FLAG_Z};
+		return vector<uint32_t> { IL_FLAG_N, IL_FLAG_Z };
 	default:
 		return vector<uint32_t> {};
 	}
@@ -1497,25 +1502,25 @@ vector<uint32_t> ArmCommonArchitecture::GetFlagsRequiredForFlagCondition(
 	{
 	case LLFC_E:
 	case LLFC_NE:
-		return vector<uint32_t> {IL_FLAG_Z};
+		return vector<uint32_t> { IL_FLAG_Z };
 	case LLFC_SLT:
 	case LLFC_SGE:
-		return vector<uint32_t> {IL_FLAG_N, IL_FLAG_V};
+		return vector<uint32_t> { IL_FLAG_N, IL_FLAG_V };
 	case LLFC_ULT:
 	case LLFC_UGE:
-		return vector<uint32_t> {IL_FLAG_C};
+		return vector<uint32_t> { IL_FLAG_C };
 	case LLFC_SLE:
 	case LLFC_SGT:
-		return vector<uint32_t> {IL_FLAG_Z, IL_FLAG_N, IL_FLAG_V};
+		return vector<uint32_t> { IL_FLAG_Z, IL_FLAG_N, IL_FLAG_V };
 	case LLFC_ULE:
 	case LLFC_UGT:
-		return vector<uint32_t> {IL_FLAG_C, IL_FLAG_Z};
+		return vector<uint32_t> { IL_FLAG_C, IL_FLAG_Z };
 	case LLFC_NEG:
 	case LLFC_POS:
-		return vector<uint32_t> {IL_FLAG_N};
+		return vector<uint32_t> { IL_FLAG_N };
 	case LLFC_O:
 	case LLFC_NO:
-		return vector<uint32_t> {IL_FLAG_V};
+		return vector<uint32_t> { IL_FLAG_V };
 	default:
 		return vector<uint32_t>();
 	}
@@ -1565,151 +1570,151 @@ string ArmCommonArchitecture::GetRegisterName(uint32_t reg)
 vector<uint32_t> ArmCommonArchitecture::GetFullWidthRegisters()
 {
 	return vector<uint32_t> {
-	    REG_R0,
-	    REG_R1,
-	    REG_R2,
-	    REG_R3,
-	    REG_R4,
-	    REG_R5,
-	    REG_R6,
-	    REG_R7,
-	    REG_R8,
-	    REG_R9,
-	    REG_R10,
-	    REG_R11,
-	    REG_R12,
-	    REG_R13,
-	    REG_R14,
-	    REG_R15,
-	    REG_Q0,
-	    REG_Q1,
-	    REG_Q2,
-	    REG_Q3,
-	    REG_Q4,
-	    REG_Q5,
-	    REG_Q6,
-	    REG_Q7,
-	    REG_Q8,
-	    REG_Q9,
-	    REG_Q10,
-	    REG_Q11,
-	    REG_Q12,
-	    REG_Q13,
-	    REG_Q14,
-	    REG_Q15,
+		REG_R0,
+		REG_R1,
+		REG_R2,
+		REG_R3,
+		REG_R4,
+		REG_R5,
+		REG_R6,
+		REG_R7,
+		REG_R8,
+		REG_R9,
+		REG_R10,
+		REG_R11,
+		REG_R12,
+		REG_R13,
+		REG_R14,
+		REG_R15,
+		REG_Q0,
+		REG_Q1,
+		REG_Q2,
+		REG_Q3,
+		REG_Q4,
+		REG_Q5,
+		REG_Q6,
+		REG_Q7,
+		REG_Q8,
+		REG_Q9,
+		REG_Q10,
+		REG_Q11,
+		REG_Q12,
+		REG_Q13,
+		REG_Q14,
+		REG_Q15,
 	};
 }
 
 vector<uint32_t> ArmCommonArchitecture::GetAllRegisters()
 {
 	return vector<uint32_t> {
-	    REG_R0,
-	    REG_R1,
-	    REG_R2,
-	    REG_R3,
-	    REG_R4,
-	    REG_R5,
-	    REG_R6,
-	    REG_R7,
-	    REG_R8,
-	    REG_R9,
-	    REG_R10,
-	    REG_R11,
-	    REG_R12,
-	    REG_R13,
-	    REG_R14,
-	    REG_R15,
-	    REG_S0,
-	    REG_S1,
-	    REG_S2,
-	    REG_S3,
-	    REG_S4,
-	    REG_S5,
-	    REG_S6,
-	    REG_S7,
-	    REG_S8,
-	    REG_S9,
-	    REG_S10,
-	    REG_S11,
-	    REG_S12,
-	    REG_S13,
-	    REG_S14,
-	    REG_S15,
-	    REG_S16,
-	    REG_S17,
-	    REG_S18,
-	    REG_S19,
-	    REG_S20,
-	    REG_S21,
-	    REG_S22,
-	    REG_S23,
-	    REG_S24,
-	    REG_S25,
-	    REG_S26,
-	    REG_S27,
-	    REG_S28,
-	    REG_S29,
-	    REG_S30,
-	    REG_S31,
-	    REG_D0,
-	    REG_D1,
-	    REG_D2,
-	    REG_D3,
-	    REG_D4,
-	    REG_D5,
-	    REG_D6,
-	    REG_D7,
-	    REG_D8,
-	    REG_D9,
-	    REG_D10,
-	    REG_D11,
-	    REG_D12,
-	    REG_D13,
-	    REG_D14,
-	    REG_D15,
-	    REG_D16,
-	    REG_D17,
-	    REG_D18,
-	    REG_D19,
-	    REG_D20,
-	    REG_D21,
-	    REG_D22,
-	    REG_D23,
-	    REG_D24,
-	    REG_D25,
-	    REG_D26,
-	    REG_D27,
-	    REG_D28,
-	    REG_D29,
-	    REG_D30,
-	    REG_D31,
-	    REG_Q0,
-	    REG_Q1,
-	    REG_Q2,
-	    REG_Q3,
-	    REG_Q4,
-	    REG_Q5,
-	    REG_Q6,
-	    REG_Q7,
-	    REG_Q8,
-	    REG_Q9,
-	    REG_Q10,
-	    REG_Q11,
-	    REG_Q12,
-	    REG_Q13,
-	    REG_Q14,
-	    REG_Q15,
+		REG_R0,
+		REG_R1,
+		REG_R2,
+		REG_R3,
+		REG_R4,
+		REG_R5,
+		REG_R6,
+		REG_R7,
+		REG_R8,
+		REG_R9,
+		REG_R10,
+		REG_R11,
+		REG_R12,
+		REG_R13,
+		REG_R14,
+		REG_R15,
+		REG_S0,
+		REG_S1,
+		REG_S2,
+		REG_S3,
+		REG_S4,
+		REG_S5,
+		REG_S6,
+		REG_S7,
+		REG_S8,
+		REG_S9,
+		REG_S10,
+		REG_S11,
+		REG_S12,
+		REG_S13,
+		REG_S14,
+		REG_S15,
+		REG_S16,
+		REG_S17,
+		REG_S18,
+		REG_S19,
+		REG_S20,
+		REG_S21,
+		REG_S22,
+		REG_S23,
+		REG_S24,
+		REG_S25,
+		REG_S26,
+		REG_S27,
+		REG_S28,
+		REG_S29,
+		REG_S30,
+		REG_S31,
+		REG_D0,
+		REG_D1,
+		REG_D2,
+		REG_D3,
+		REG_D4,
+		REG_D5,
+		REG_D6,
+		REG_D7,
+		REG_D8,
+		REG_D9,
+		REG_D10,
+		REG_D11,
+		REG_D12,
+		REG_D13,
+		REG_D14,
+		REG_D15,
+		REG_D16,
+		REG_D17,
+		REG_D18,
+		REG_D19,
+		REG_D20,
+		REG_D21,
+		REG_D22,
+		REG_D23,
+		REG_D24,
+		REG_D25,
+		REG_D26,
+		REG_D27,
+		REG_D28,
+		REG_D29,
+		REG_D30,
+		REG_D31,
+		REG_Q0,
+		REG_Q1,
+		REG_Q2,
+		REG_Q3,
+		REG_Q4,
+		REG_Q5,
+		REG_Q6,
+		REG_Q7,
+		REG_Q8,
+		REG_Q9,
+		REG_Q10,
+		REG_Q11,
+		REG_Q12,
+		REG_Q13,
+		REG_Q14,
+		REG_Q15,
 	};
 }
 
 vector<uint32_t> ArmCommonArchitecture::GetAllFlags()
 {
-	return vector<uint32_t> {IL_FLAG_N, IL_FLAG_Z, IL_FLAG_C, IL_FLAG_V, IL_FLAG_Q};
+	return vector<uint32_t> { IL_FLAG_N, IL_FLAG_Z, IL_FLAG_C, IL_FLAG_V, IL_FLAG_Q };
 }
 
 vector<uint32_t> ArmCommonArchitecture::GetAllFlagWriteTypes()
 {
-	return vector<uint32_t> {IL_FLAGWRITE_ALL, IL_FLAGWRITE_NZ};
+	return vector<uint32_t> { IL_FLAGWRITE_ALL, IL_FLAGWRITE_NZ };
 }
 
 BNRegisterInfo ArmCommonArchitecture::GetRegisterInfo(uint32_t reg)
@@ -1874,17 +1879,17 @@ class ArmCallingConvention : public CallingConvention
 
 	virtual vector<uint32_t> GetIntegerArgumentRegisters() override
 	{
-		return vector<uint32_t> {REG_R0, REG_R1, REG_R2, REG_R3};
+		return vector<uint32_t> { REG_R0, REG_R1, REG_R2, REG_R3 };
 	}
 
 	virtual vector<uint32_t> GetCallerSavedRegisters() override
 	{
-		return vector<uint32_t> {REG_R0, REG_R1, REG_R2, REG_R3, REG_R12, REG_LR};
+		return vector<uint32_t> { REG_R0, REG_R1, REG_R2, REG_R3, REG_R12, REG_LR };
 	}
 
 	virtual vector<uint32_t> GetCalleeSavedRegisters() override
 	{
-		return vector<uint32_t> {REG_R4, REG_R5, REG_R6, REG_R7, REG_R8, REG_R10, REG_R11};
+		return vector<uint32_t> { REG_R4, REG_R5, REG_R6, REG_R7, REG_R8, REG_R10, REG_R11 };
 	}
 
 	virtual uint32_t GetIntegerReturnValueRegister() override { return REG_R0; }
@@ -1900,14 +1905,17 @@ class LinuxArmv7SystemCallConvention : public CallingConvention
 
 	virtual vector<uint32_t> GetIntegerArgumentRegisters() override
 	{
-		return vector<uint32_t> {REG_R7, REG_R0, REG_R1, REG_R2, REG_R3, REG_R4, REG_R5, REG_R6};
+		return vector<uint32_t> { REG_R7, REG_R0, REG_R1, REG_R2, REG_R3, REG_R4, REG_R5, REG_R6 };
 	}
 
-	virtual vector<uint32_t> GetCallerSavedRegisters() override { return vector<uint32_t> {REG_R0}; }
+	virtual vector<uint32_t> GetCallerSavedRegisters() override
+	{
+		return vector<uint32_t> { REG_R0 };
+	}
 
 	virtual vector<uint32_t> GetCalleeSavedRegisters() override
 	{
-		return vector<uint32_t> {REG_R4, REG_R5, REG_R6, REG_R7, REG_R8, REG_R10, REG_R11};
+		return vector<uint32_t> { REG_R4, REG_R5, REG_R6, REG_R7, REG_R8, REG_R10, REG_R11 };
 	}
 
 	virtual uint32_t GetIntegerReturnValueRegister() override { return REG_R0; }

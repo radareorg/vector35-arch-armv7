@@ -1,6 +1,7 @@
 #pragma once
 
 #include "armv7.h"
+#include "spec.h"
 
 //*****************************************************************************
 // defines, values
@@ -80,10 +81,12 @@ enum COND
 
 /* addressing modes */
 /* these index the instruction format strings */
-#define ADDRMODE_OFFSET 0   /* eaddr = base reg + offset, base reg unchanged, like [<Rn>,<offset>] \
-	                           */
-#define ADDRMODE_PREINDEX 1 /* eaddr = base reg + offset, base reg CHANGED, like [<Rn>,<offset>]! \
-	                           */
+#define ADDRMODE_OFFSET \
+	0 /* eaddr = base reg + offset, base reg unchanged, like [<Rn>,<offset>] \
+	   */
+#define ADDRMODE_PREINDEX \
+	1 /* eaddr = base reg + offset, base reg CHANGED, like [<Rn>,<offset>]! \
+	   */
 #define ADDRMODE_POSTINDEX   2 /* eaddr = base reg, base reg CHANGED, like [<Rn>], <offset> */
 #define ADDRMODE_UNINDEXED   3 /* eaddr = base reg */
 #define ADDRMODE_ADVSIMD_0   0

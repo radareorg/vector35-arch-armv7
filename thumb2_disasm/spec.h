@@ -1,3 +1,5 @@
+#pragma once
+
 int thumb_root(struct decomp_request* req, struct decomp_result* res);
 
 /* these are the <foo> and <bar> found in the spec's format strings */

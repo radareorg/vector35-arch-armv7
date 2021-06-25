@@ -4,10 +4,7 @@
 #include <vector>
 
 #include "disassembler.h"
-#include "spec.h"
 
-/* from ../armv7/armv7.h */
-#include "armv7.h"
 using namespace armv7;
 
 using namespace std;
@@ -174,11 +171,11 @@ int thumb_decompose(struct decomp_request* info, struct decomp_result* result)
 
 const char* get_thumb_condition_name(uint32_t cond)
 {
-	static const char* COND_lookup_str[] = {"eq", /* equal, Z==1 */
-	    "ne",                                     /* not equal, Z==0 */
-	    "cs",                                     /* greater than, equal, or unordered C==1, AKA HS */
-	    "cc",                                     /* AKA "LO" */
-	    "mi", "pl", "vs", "vc", "hi", "ls", "ge", "lt", "gt", "le", "al", ""};
+	static const char* COND_lookup_str[] = { "eq", /* equal, Z==1 */
+		"ne",                                        /* not equal, Z==0 */
+		"cs", /* greater than, equal, or unordered C==1, AKA HS */
+		"cc", /* AKA "LO" */
+		"mi", "pl", "vs", "vc", "hi", "ls", "ge", "lt", "gt", "le", "al", "" };
 
 	if (cond >= 0x10)
 	{
@@ -261,11 +258,11 @@ std::string get_thumb_operation_name(struct decomp_result* result)
 
 	if (format->operationFlags & INSTR_FORMAT_FLAG_MASK)
 	{
-		const char* lookup_fc0[16] = {"undef", "ttt", "tt", "tte", "t", "tet", "te", "tee", "", "ett",
-		    "et", "ete", "e", "eet", "ee", "eee"};
+		const char* lookup_fc0[16] = { "undef", "ttt", "tt", "tte", "t", "tet", "te", "tee", "", "ett",
+			"et", "ete", "e", "eet", "ee", "eee" };
 
-		const char* lookup_fc1[16] = {"undef", "eee", "ee", "eet", "e", "ete", "et", "ett", "", "tee",
-		    "te", "tet", "t", "tte", "tt", "ttt"};
+		const char* lookup_fc1[16] = { "undef", "eee", "ee", "eet", "e", "ete", "et", "ett", "", "tee",
+			"te", "tet", "t", "tte", "tt", "ttt" };
 
 		const char** lookup = lookup_fc0;
 
@@ -283,13 +280,13 @@ std::string get_thumb_operation_name(struct decomp_result* result)
 		/* Encoding T1 (16 bit) */
 		if (IS_FIELD_PRESENT(result, FIELD_im))
 		{
-			const char* lookup[2] = {"ie", "id"};
+			const char* lookup[2] = { "ie", "id" };
 			contents += lookup[result->fields[FIELD_im]];
 		}
 		/* Encoding T2 (32-bit) */
 		else if (IS_FIELD_PRESENT(result, FIELD_imod))
 		{
-			const char* lookup[4] = {"", "", "ie", "id"};
+			const char* lookup[4] = { "", "", "ie", "id" };
 			contents += lookup[result->fields[FIELD_imod]];
 		}
 		else
@@ -323,7 +320,7 @@ std::string get_thumb_operation_name(struct decomp_result* result)
 
 	if (format->operationFlags & INSTR_FORMAT_FLAG_NEON_SIZE)
 	{
-		const char* lookup[4] = {".8", ".16", ".32", ".64"};
+		const char* lookup[4] = { ".8", ".16", ".32", ".64" };
 		int index = 0;
 		if (IS_FIELD_PRESENT(result, FIELD_size))
 			index = result->fields[FIELD_size];
@@ -331,7 +328,7 @@ std::string get_thumb_operation_name(struct decomp_result* result)
 	}
 	if (format->operationFlags & INSTR_FORMAT_FLAG_NEON_SINGLE_SIZE)
 	{
-		const char* lookup[4] = {"8", "16", "32", "64"};
+		const char* lookup[4] = { "8", "16", "32", "64" };
 		int index = 0;
 		if (IS_FIELD_PRESENT(result, FIELD_size))
 			index = result->fields[FIELD_size];
@@ -339,8 +336,8 @@ std::string get_thumb_operation_name(struct decomp_result* result)
 	}
 	if (format->operationFlags & INSTR_FORMAT_FLAG_NEON_TYPE_SIZE)
 	{
-		const char* tlookup[4] = {".error", ".S", ".S", ".U"};
-		const char* slookup[4] = {"16", "32", "64", "8"};
+		const char* tlookup[4] = { ".error", ".S", ".S", ".U" };
+		const char* slookup[4] = { "16", "32", "64", "8" };
 		int tindex = 0;
 		int sindex = 0;
 		if (IS_FIELD_PRESENT(result, FIELD_size) && IS_FIELD_PRESENT(result, FIELD_type))
