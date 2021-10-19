@@ -8100,6 +8100,7 @@ uint32_t armv7_64_bit_transfers(uint32_t instructionValue, Instruction* restrict
 	return instruction->operation == ARMV7_UNDEFINED;
 }
 
+static
 const char* get_operation(Operation operation)
 {
 	if (operation > ARMV7_UNDEFINED && operation < ARMV7_END_INSTRUCTION)
@@ -8114,6 +8115,7 @@ const char* get_vector_data_type(DataType dataType)
 	return "";
 }
 
+static
 const char* get_register_name(Register reg)
 {
 	if (reg >= REG_R0 && reg <= REG_Q15)
@@ -8168,6 +8170,7 @@ const char* get_dsb_option(DsbOption opt)
 	return NULL;
 }
 
+static
 const char* get_shift(Shift shift)
 {
 	if (shift >= SHIFT_NONE  && shift < SHIFT_END)
@@ -8175,6 +8178,7 @@ const char* get_shift(Shift shift)
 	return NULL;
 }
 
+static
 const char* get_condition(Condition cond)
 {
 	if (cond >= COND_EQ && cond < COND_END)
@@ -8182,6 +8186,7 @@ const char* get_condition(Condition cond)
 	return "";
 }
 
+static
 uint32_t get_register_names(Register reg, const char** regNames, OperandClass cls)
 {
 	uint32_t base = REG_R0;
@@ -8229,6 +8234,7 @@ uint32_t get_register_list(InstructionOperand* op, char* out, OperandClass cls)
 	return 0;
 }
 
+UNUSED
 uint32_t get_register_size(Register reg)
 {
 	if (reg <= REG_S31)

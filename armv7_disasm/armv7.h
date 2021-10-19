@@ -926,10 +926,10 @@ typedef union _ieee754_double {
 			uint32_t outBufferSize);
 
 	//Helpers for disassembling the instruction operands to strings
-	const char* get_operation(Operation operation);
+	static const char* get_operation(Operation operation);
 	char* get_full_operation(char* outBuffer, size_t outBufferSize, Instruction* restrict instruction);
 	const char* get_vector_data_type(DataType dataType);
-	const char* get_register_name(Register reg);
+	static const char* get_register_name(Register reg);
 	const char* get_banked_register_name(BankedRegister regb);
 	const char* get_coproc_register_c_name(CoprocRegisterC regc);
 	const char* get_coproc_register_p_name(CoprocRegisterP regp);
@@ -937,10 +937,10 @@ typedef union _ieee754_double {
 	const char* get_iflag(Iflags iflag);
 	const char* get_endian(EndianSpec spec);
 	const char* get_dsb_option(DsbOption opt);
-	const char* get_shift(Shift shift);
-	const char* get_condition(Condition cond);
-	uint32_t get_register_size(Register reg);
-	uint32_t get_register_names(Register reg, const char** regNames, OperandClass type);
+	static const char* get_shift(Shift shift);
+	static const char* get_condition(Condition cond);
+	static uint32_t get_register_size(Register reg);
+	static uint32_t get_register_names(Register reg, const char** regNames, OperandClass type);
 #ifdef __cplusplus
 	} //end extern "C"
 #endif
