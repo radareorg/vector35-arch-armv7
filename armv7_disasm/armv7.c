@@ -42,7 +42,7 @@ uint32_t armv7_two_register_scalar(uint32_t instructionValue, Instruction* restr
 uint32_t armv7_unconditional(uint32_t instructionValue, Instruction* restrict instruction, uint32_t address);
 typedef uint32_t (*armv7_decompose_instruction)(uint32_t instructionValue, Instruction* restrict instruction, uint32_t address);
 
-static Register regMap[2] = {REG_D0, REG_Q0};
+static Register regMap[2] = {ARMV7_REG_D0, ARMV7_REG_Q0};
 
 
 #define SET_REGISTER(x) (1<<((x)))
@@ -807,7 +807,7 @@ uint32_t simdExpandImm(uint32_t op, uint32_t cmode, uint64_t imm8, uint64_t* res
 	uint32_t testImm = 0;
 	imm8 &= 0xff;
 	static uint8_t repBit[2] = {0x00,0xff};
-	*cls = IMM;
+	*cls = OC_IMM;
 	switch ((cmode >> 1) & 7)
 	{
 		case 0:
@@ -860,7 +860,7 @@ uint32_t simdExpandImm(uint32_t op, uint32_t cmode, uint64_t imm8, uint64_t* res
 				else
 				{
 					*dt = DT_I64;
-					*cls = IMM64;
+					*cls = OC_IMM64;
 					*result = ((uint64_t) repBit[imm8 & 1]) |
 						(((uint64_t)repBit[(imm8 >> 1) & 1]) << 8) |
 						(((uint64_t)repBit[(imm8 >> 2) & 1]) << 16) |
@@ -1133,9 +1133,9 @@ uint32_t armv7_data_processing_and_misc(uint32_t instructionValue, Instruction* 
 					instruction->operation = ARMV7_MOVW;
 					instruction->cond = (enum Condition)decode2.cond;
 					instruction->setsFlags = 0; //decode2.s;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (enum Register)decode2.rd;
-					instruction->operands[1].cls = IMM;
+					instruction->operands[1].cls = OC_IMM;
 					instruction->operands[1].imm = decode2.imm4 << 12 | decode2.imm12;
 					return 0;
 					}
@@ -1155,9 +1155,9 @@ uint32_t armv7_data_processing_and_misc(uint32_t instructionValue, Instruction* 
 					decode2.value = instructionValue;
 					instruction->operation = ARMV7_MOVT;
 					instruction->cond = (enum Condition)decode2.cond;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (enum Register)decode2.rd;
-					instruction->operands[1].cls = IMM;
+					instruction->operands[1].cls = OC_IMM;
 					instruction->operands[1].imm = (decode2.imm4 << 12) | decode2.imm12;
 					return 0;
 					}
@@ -1268,44 +1268,44 @@ uint32_t armv7_data_processing_reg(uint32_t instructionValue, Instruction* restr
 	switch (info->type)
 	{
 		case 0:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (enum Register)decode.rd;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (enum Register)decode.rn;
-			instruction->operands[2].cls = REG;
+			instruction->operands[2].cls = OC_REG;
 			instruction->operands[2].reg = (enum Register)decode.rm;
 			instruction->operands[2].imm = DecodeImmShift(decode.type, decode.imm5,
 				&instruction->operands[2].shift);
 			break;
 		case 1:
 			instruction->setsFlags = 0;
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (enum Register)decode.rn;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (enum Register)decode.rm;
 			instruction->operands[1].imm = DecodeImmShift(decode.type, decode.imm5,
 				&instruction->operands[1].shift);
 			break;
 		case 2:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (enum Register)decode.rd;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (enum Register)decode.rm;
 			break;
 		case 3:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (enum Register)decode.rd;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (enum Register)decode.rm;
 			instruction->operands[1].imm = DecodeImmShift(decode.type, decode.imm5,
 				&instruction->operands[1].shift);
 			break;
 		case 4:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (enum Register)decode.rd;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (enum Register)decode.rm;
-			instruction->operands[2].cls = IMM;
+			instruction->operands[2].cls = OC_IMM;
 			instruction->operands[2].imm = DecodeImmShift(decode.type, decode.imm5, &dummy);
 			break;
 	}
@@ -1411,11 +1411,11 @@ uint32_t armv7_data_processing_reg_shifted_reg(uint32_t instructionValue, Instru
 	switch (op->type)
 	{
 		case 0:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (enum Register)decode.com.rd;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (enum Register)decode.com.rn;
-			instruction->operands[2].cls = REG;
+			instruction->operands[2].cls = OC_REG;
 			instruction->operands[2].reg = (enum Register)decode.com.rm;
 			instruction->operands[2].shift = DecodeRegisterShift(decode.com.type);
 			instruction->operands[2].offset = (enum Register)decode.com.rs;
@@ -1423,26 +1423,26 @@ uint32_t armv7_data_processing_reg_shifted_reg(uint32_t instructionValue, Instru
 			break;
 		case 1:
 			instruction->setsFlags = 0;
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (enum Register)decode.com.rn;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (enum Register)decode.com.rm;
 			instruction->operands[1].shift = DecodeRegisterShift(decode.com.type);
 			instruction->operands[1].offset = (enum Register)decode.com.rs;
 			instruction->operands[1].flags.offsetRegUsed = 1;
 			break;
 		case 2:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (enum Register)decode.ror.rd;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (enum Register)decode.ror.rn;
-			instruction->operands[2].cls = REG;
+			instruction->operands[2].cls = OC_REG;
 			instruction->operands[2].reg = (enum Register)decode.ror.rm;
 			break;
 		case 3:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (enum Register)decode.com.rd;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (enum Register)decode.com.rm;
 			instruction->operands[1].shift = DecodeRegisterShift(decode.com.type);
 			instruction->operands[1].offset = (enum Register)decode.com.rs;
@@ -1494,11 +1494,11 @@ uint32_t armv7_data_processing_imm(uint32_t instructionValue, Instruction* restr
 	instruction->setsFlags = decode.s;
 	if ((instruction->operation == ARMV7_SUB ||
 		instruction->operation == ARMV7_ADD) &&
-		decode.rn == REG_PC)
+		decode.rn == ARMV7_REG_PC)
 	{
-		instruction->operands[0].cls = REG;
+		instruction->operands[0].cls = OC_REG;
 		instruction->operands[0].reg = (Register)decode.rd;
-		instruction->operands[1].cls = LABEL;
+		instruction->operands[1].cls = OC_LABEL;
 		instruction->operands[1].imm = address + 8;
 		if (instruction->operation == ARMV7_ADD) {
 			instruction->operands[1].imm += ExpandImm(decode.imm);
@@ -1520,16 +1520,16 @@ uint32_t armv7_data_processing_imm(uint32_t instructionValue, Instruction* restr
 	}
 	else
 	{
-		instruction->operands[i].cls = REG;
+		instruction->operands[i].cls = OC_REG;
 		instruction->operands[i++].reg = (Register)decode.rd;
 	}
 	if (instruction->operation != ARMV7_MOV &&
 		instruction->operation != ARMV7_MVN )
 	{
-		instruction->operands[i].cls = REG;
+		instruction->operands[i].cls = OC_REG;
 		instruction->operands[i++].reg = (Register)decode.rn;
 	}
-	instruction->operands[i].cls = IMM;
+	instruction->operands[i].cls = OC_IMM;
 	instruction->operands[i].imm = ExpandImm(decode.imm);
 	return 0;
 }
@@ -1589,27 +1589,27 @@ uint32_t armv7_multiply_and_accumulate(uint32_t instructionValue, Instruction* r
 	if (instruction->operation == ARMV7_MLS ||
 		instruction->operation == ARMV7_MLA)
 	{
-		instruction->operands[i].cls = REG;
+		instruction->operands[i].cls = OC_REG;
 		instruction->operands[i++].reg = (Register)(Register)decode.maal.rdhi;
-		instruction->operands[i].cls = REG;
+		instruction->operands[i].cls = OC_REG;
 		instruction->operands[i++].reg = (Register)decode.rn;
-		instruction->operands[i].cls = REG;
+		instruction->operands[i].cls = OC_REG;
 		instruction->operands[i++].reg = (Register)decode.rm;
-		instruction->operands[i].cls = REG;
+		instruction->operands[i].cls = OC_REG;
 		instruction->operands[i].reg = (Register)(Register)decode.maal.rdlo;
 	}
 	else
 	{
 		if (instruction->operation != ARMV7_MUL)
 		{
-			instruction->operands[i].cls = REG;
+			instruction->operands[i].cls = OC_REG;
 			instruction->operands[i++].reg = (Register)(Register)decode.maal.rdlo;
 		}
-		instruction->operands[i].cls = REG;
+		instruction->operands[i].cls = OC_REG;
 		instruction->operands[i++].reg = (Register)(Register)decode.maal.rdhi;
-		instruction->operands[i].cls = REG;
+		instruction->operands[i].cls = OC_REG;
 		instruction->operands[i++].reg = (Register)decode.rn;
-		instruction->operands[i].cls = REG;
+		instruction->operands[i].cls = OC_REG;
 		instruction->operands[i].reg = (Register)decode.rm;
 	}
 	return instruction->operation == ARMV7_UNDEFINED;
@@ -1644,11 +1644,11 @@ uint32_t armv7_saturating_add_sub(uint32_t instructionValue, Instruction* restri
 	instruction->setsFlags = decode.op & 1;
 	instruction->cond = (Condition)decode.cond;
 	instruction->unpredictable = decode.rd == 15 || decode.rn == 15 || decode.rm == 15;
-	instruction->operands[0].cls = REG;
+	instruction->operands[0].cls = OC_REG;
 	instruction->operands[0].reg = (Register)decode.rd;
-	instruction->operands[1].cls = REG;
+	instruction->operands[1].cls = OC_REG;
 	instruction->operands[1].reg = (Register)decode.rm;
-	instruction->operands[2].cls = REG;
+	instruction->operands[2].cls = OC_REG;
 	instruction->operands[2].reg = (Register)decode.rn;
 	return instruction->operation == ARMV7_UNDEFINED;
 }
@@ -1743,13 +1743,13 @@ uint32_t armv7_halfword_multiply_and_accumulate(uint32_t instructionValue, Instr
 			{
 			static Operation operation2[] = {ARMV7_SMLABB,  ARMV7_SMLATB,  ARMV7_SMLABT,  ARMV7_SMLATT};
 			instruction->operation = operation2[(decode.smla.m << 1) | decode.smla.n];
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.smla.rd;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (Register)decode.smla.rn;
-			instruction->operands[2].cls = REG;
+			instruction->operands[2].cls = OC_REG;
 			instruction->operands[2].reg = (Register)decode.smla.rm;
-			instruction->operands[3].cls = REG;
+			instruction->operands[3].cls = OC_REG;
 			instruction->operands[3].reg = (Register)decode.smla.ra;
 			}
 			break;
@@ -1762,13 +1762,13 @@ uint32_t armv7_halfword_multiply_and_accumulate(uint32_t instructionValue, Instr
 				else
 					instruction->operation = ARMV7_SMLAWB;
 
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)decode.smlaw.rd;
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)decode.smlaw.rn;
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.smlaw.rm;
-				instruction->operands[3].cls = REG;
+				instruction->operands[3].cls = OC_REG;
 				instruction->operands[3].reg = (Register)decode.smlaw.ra;
 			}
 			else
@@ -1777,11 +1777,11 @@ uint32_t armv7_halfword_multiply_and_accumulate(uint32_t instructionValue, Instr
 					instruction->operation = ARMV7_SMULWT;
 				else
 					instruction->operation = ARMV7_SMULWB;
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)decode.smulw.rd;
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)decode.smulw.rn;
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.smulw.rm;
 			}
 			}
@@ -1790,13 +1790,13 @@ uint32_t armv7_halfword_multiply_and_accumulate(uint32_t instructionValue, Instr
 			{
 			static Operation operation2[] = {ARMV7_SMLALBB, ARMV7_SMLALTB, ARMV7_SMLALBT, ARMV7_SMLALTT};
 			instruction->operation = operation2[(decode.smlal.m << 1) | decode.smlal.n];
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.smlal.rdlo;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (Register)decode.smlal.rdhi;
-			instruction->operands[2].cls = REG;
+			instruction->operands[2].cls = OC_REG;
 			instruction->operands[2].reg = (Register)decode.smlal.rn;
-			instruction->operands[3].cls = REG;
+			instruction->operands[3].cls = OC_REG;
 			instruction->operands[3].reg = (Register)decode.smlal.rm;
 			}
 			break;
@@ -1804,11 +1804,11 @@ uint32_t armv7_halfword_multiply_and_accumulate(uint32_t instructionValue, Instr
 			{
 			static Operation operation2[] = {ARMV7_SMULBB,  ARMV7_SMULTB,  ARMV7_SMULBT,  ARMV7_SMULTT};
 			instruction->operation = operation2[(decode.smul.m << 1) | decode.smul.n];
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.smul.rd;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (Register)decode.smul.rn;
-			instruction->operands[2].cls = REG;
+			instruction->operands[2].cls = OC_REG;
 			instruction->operands[2].reg = (Register)decode.smul.rm;
 			}
 			break;
@@ -1870,11 +1870,11 @@ uint32_t armv7_extra_load_store(uint32_t instructionValue, Instruction* restrict
 	uint32_t wback = decode.p == 0 || decode.w == 1;
 	uint32_t index = decode.p;
 
-	instruction->operands[i].cls = REG;
+	instruction->operands[i].cls = OC_REG;
 	instruction->operands[i++].reg = (Register)decode.rt;
 	if (instruction->operation == ARMV7_STRD || instruction->operation == ARMV7_LDRD)
 	{
-		instruction->operands[i].cls = REG;
+		instruction->operands[i].cls = OC_REG;
 		instruction->operands[i++].reg = (Register)(Register)((decode.rt + 1) % 16);
 	}
 
@@ -1890,8 +1890,8 @@ uint32_t armv7_extra_load_store(uint32_t instructionValue, Instruction* restrict
 		case 1://Register
 			{
 			static OperandClass memDecode[2][2] = {
-				{NONE, MEM_POST_IDX},
-				{MEM_IMM,  MEM_PRE_IDX}
+				{OC_NONE, OC_MEM_POST_IDX},
+				{OC_MEM_IMM,  OC_MEM_PRE_IDX}
 			};
 			instruction->operands[i].cls = memDecode[index][wback];
 			instruction->operands[i].reg = (Register)decode.rn;
@@ -1903,8 +1903,8 @@ uint32_t armv7_extra_load_store(uint32_t instructionValue, Instruction* restrict
 		case 2://Immediate
 			{
 			static OperandClass memDecode[2][2] = {
-				{NONE, MEM_POST_IDX},
-				{MEM_IMM,  MEM_PRE_IDX}
+				{OC_NONE, OC_MEM_POST_IDX},
+				{OC_MEM_IMM,  OC_MEM_PRE_IDX}
 			};
 			instruction->operands[i].cls = memDecode[index][wback];
 			instruction->operands[i].reg = (Register)decode.rn;
@@ -1913,7 +1913,7 @@ uint32_t armv7_extra_load_store(uint32_t instructionValue, Instruction* restrict
 			break;
 			}
 		case 3://Literal
-			instruction->operands[i].cls = LABEL;
+			instruction->operands[i].cls = OC_LABEL;
 			if (decode.u == 1)
 				instruction->operands[i].imm = address + (decode.immH << 4 | decode.rm);
 			else
@@ -1972,11 +1972,11 @@ uint32_t armv7_extra_load_store_unprivilaged(uint32_t instructionValue, Instruct
 		{ARMV7_UNDEFINED, ARMV7_LDRSHT}
 	};
 
-	static OperandClass memType[2] = {MEM_POST_IDX, MEM_POST_IDX};
+	static OperandClass memType[2] = {OC_MEM_POST_IDX, OC_MEM_POST_IDX};
 	decode.value = instructionValue;
 	instruction->operation = operation[decode.op2][decode.op];
 	instruction->cond = (Condition)decode.cond;
-	instruction->operands[0].cls = REG;
+	instruction->operands[0].cls = OC_REG;
 	instruction->operands[0].reg = (Register)decode.reg.rt;
 	instruction->operands[1].cls = memType[decode.i];
 	instruction->operands[1].reg = (Register)decode.reg.rn;
@@ -2073,47 +2073,47 @@ uint32_t armv7_synchronization_primitives(uint32_t instructionValue, Instruction
 	{
 		case 0:
 			//instruction->cond = (Condition)COND_NONE;
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.swp.rt;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (Register)decode.swp.rt2;
-			instruction->operands[2].cls = MEM_IMM;
+			instruction->operands[2].cls = OC_MEM_IMM;
 			instruction->operands[2].flags.add = 1;
 			instruction->operands[2].reg = (Register)decode.swp.rn;
 			break;
 		case 1:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.ldrex.rt;
-			instruction->operands[1].cls = MEM_IMM;
+			instruction->operands[1].cls = OC_MEM_IMM;
 			instruction->operands[1].flags.add = 1;
 			instruction->operands[1].reg = (Register)decode.ldrex.rn;
 			break;
 		case 2:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.strexd.rd;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (Register)decode.strexd.rt;
-			instruction->operands[2].cls = REG;
+			instruction->operands[2].cls = OC_REG;
 			instruction->operands[2].reg = (Register)(Register)((decode.strexd.rt + 1) % 16);
-			instruction->operands[3].cls = MEM_IMM;
+			instruction->operands[3].cls = OC_MEM_IMM;
 			instruction->operands[3].flags.add = 1;
 			instruction->operands[3].reg = (Register)decode.strexd.rn;
 			break;
 		case 3:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.ldrex.rt;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (Register)(Register)((decode.ldrex.rt + 1) % 16);
-			instruction->operands[2].cls = MEM_IMM;
+			instruction->operands[2].cls = OC_MEM_IMM;
 			instruction->operands[2].flags.add = 1;
 			instruction->operands[2].reg = (Register)decode.ldrex.rn;
 			break;
 		case 4:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.swp.rt;
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (Register)decode.swp.rt2;
-			instruction->operands[2].cls = MEM_IMM;
+			instruction->operands[2].cls = OC_MEM_IMM;
 			instruction->operands[2].flags.add = 1;
 			instruction->operands[2].reg = (Register)decode.swp.rn;
 			break;
@@ -2141,7 +2141,7 @@ uint32_t armv7_synchronization_primitives(uint32_t instructionValue, Instruction
 				instruction->operation = ARMV7_STL; // A32
 				instruction->operands[0] = instruction->operands[1];
 				instruction->operands[1] = instruction->operands[2];
-				instruction->operands[2].cls = NONE;
+				instruction->operands[2].cls = OC_NONE;
 				break;
 			default: break;
 		}
@@ -2203,34 +2203,34 @@ uint32_t armv7_msr_imm_and_hints(uint32_t instructionValue, Instruction* restric
 		else if (decode.op2 >= 240)
 		{
 			instruction->operation = ARMV7_DBG;
-			instruction->operands[0].cls = IMM;
+			instruction->operands[0].cls = OC_IMM;
 			instruction->operands[0].imm = decode.op2 & 15;
 		}
 		else
 		{
 			instruction->operation = ARMV7_HINT;
-			instruction->operands[0].cls = IMM;
+			instruction->operands[0].cls = OC_IMM;
 			instruction->operands[0].imm = decode.op2;
 		}
 	}
 	else if (decode.op == 0 && (decode.op1 == 4 || (decode.op1 & 11) == 8))
 	{
 		instruction->operation = ARMV7_MSR;
-		instruction->operands[0].cls = REG_SPEC;
+		instruction->operands[0].cls = OC_REG_SPEC;
 		instruction->operands[0].reg = (Register)(Register)(REGS_APSR + decode.msr.mask);
-		instruction->operands[1].cls = IMM;
+		instruction->operands[1].cls = OC_IMM;
 		instruction->operands[1].imm = ExpandImm(decode.msr.imm12);
 	}
 	else if (decode.op == 1 ||
 			(decode.op == 0 && ((decode.op1 & 3) == 1 || (decode.op1 & 2) == 2)))
 	{
 		instruction->operation = ARMV7_MSR;
-		instruction->operands[0].cls = REG_SPEC;
+		instruction->operands[0].cls = OC_REG_SPEC;
 		if (decode.msr2.r == 1)
 			instruction->operands[0].reg = (Register)(Register)(REGS_SPSR + decode.msr2.mask);
 		else
 			instruction->operands[0].reg = (Register)(Register)(REGS_CPSR + decode.msr2.mask);
-		instruction->operands[1].cls = IMM;
+		instruction->operands[1].cls = OC_IMM;
 		instruction->operands[1].imm = ExpandImm(decode.msr.imm12);
 	}
 	return instruction->operation == ARMV7_UNDEFINED;
@@ -2313,9 +2313,9 @@ uint32_t armv7_miscellaneous(uint32_t instructionValue, Instruction* restrict in
 				{
 					instruction->operation = ARMV7_MRS;
 					instruction->cond = (Condition)decode.cond;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.msr.rd;
-					instruction->operands[1].cls = REG_SPEC;
+					instruction->operands[1].cls = OC_REG_SPEC;
 					instruction->operands[1].regb = banked[decode.msr.r][sysm];
 					return instruction->operands[1].regb == REGB_INVALID;
 				}
@@ -2323,9 +2323,9 @@ uint32_t armv7_miscellaneous(uint32_t instructionValue, Instruction* restrict in
 				{
 					instruction->operation = ARMV7_MSR;
 					instruction->cond = (Condition)decode.cond;
-					instruction->operands[0].cls = REG_BANKED;
+					instruction->operands[0].cls = OC_REG_BANKED;
 					instruction->operands[0].regb = banked[decode.msr.r][sysm];
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)decode.msr.rn;
 					return instruction->operands[0].regb == REGB_INVALID;
 				}
@@ -2338,9 +2338,9 @@ uint32_t armv7_miscellaneous(uint32_t instructionValue, Instruction* restrict in
 					case 2:
 						instruction->operation = ARMV7_MRS;
 						instruction->cond = (Condition)decode.cond;
-						instruction->operands[0].cls = REG;
+						instruction->operands[0].cls = OC_REG;
 						instruction->operands[0].reg = (Register)decode.msr.rd;
-						instruction->operands[1].cls = REG_SPEC;
+						instruction->operands[1].cls = OC_REG_SPEC;
 						if (decode.msr.r == 1)
 							instruction->operands[1].regs = REGS_SPSR;
 						else
@@ -2349,7 +2349,7 @@ uint32_t armv7_miscellaneous(uint32_t instructionValue, Instruction* restrict in
 					case 1:
 						instruction->operation = ARMV7_MSR;
 						instruction->cond = (Condition)decode.cond;
-						instruction->operands[0].cls = REG_SPEC;
+						instruction->operands[0].cls = OC_REG_SPEC;
 						if ((decode.op1 & 3) == 0)
 							instruction->operands[0].regs = (SpecRegister)(REGS_APSR + (decode.msr.m1 >> 2));
 						else
@@ -2359,13 +2359,13 @@ uint32_t armv7_miscellaneous(uint32_t instructionValue, Instruction* restrict in
 							else
 								instruction->operands[0].regs = (SpecRegister)(REGS_CPSR + decode.msr.m1);
 						}
-						instruction->operands[1].cls = REG;
+						instruction->operands[1].cls = OC_REG;
 						instruction->operands[1].reg = (Register)decode.msr.rn;
 						break;
 					case 3:
 						instruction->operation = ARMV7_MSR;
 						instruction->cond = (Condition)decode.cond;
-						instruction->operands[0].cls = REG_SPEC;
+						instruction->operands[0].cls = OC_REG_SPEC;
 						if (decode.msr.m1 == 8 || decode.msr.m1 == 4 || decode.msr.m1 == 12)
 							instruction->operands[0].regs = (SpecRegister)(REGS_APSR + (decode.msr.m1 & 3));
 						else
@@ -2375,7 +2375,7 @@ uint32_t armv7_miscellaneous(uint32_t instructionValue, Instruction* restrict in
 							else
 								instruction->operands[0].regs = (SpecRegister)(REGS_CPSR + decode.msr.m1);
 						}
-						instruction->operands[1].cls = REG;
+						instruction->operands[1].cls = OC_REG;
 						instruction->operands[1].reg = (Register)decode.msr.rn;
 						break;
 				}
@@ -2386,29 +2386,29 @@ uint32_t armv7_miscellaneous(uint32_t instructionValue, Instruction* restrict in
 			{
 				instruction->operation = ARMV7_BX;
 				instruction->cond = (Condition)decode.cond;
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)decode.clz.rm;
 			}
 			else if (decode.op == 3)
 			{
 				instruction->operation = ARMV7_CLZ;
 				instruction->cond = (Condition)decode.cond;
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)decode.clz.rd;
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)decode.clz.rm;
 			}
 			break;
 		case 2:
 			instruction->operation = ARMV7_BXJ;
 			instruction->cond = (Condition)decode.cond;
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.clz.rm;
 			break;
 		case 3:
 			instruction->operation = ARMV7_BLX;
 			instruction->cond = (Condition)decode.cond;
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.clz.rm;
 			break;
 		case 5:
@@ -2424,7 +2424,7 @@ uint32_t armv7_miscellaneous(uint32_t instructionValue, Instruction* restrict in
 			static Operation operation[] = {ARMV7_UNDEFINED, ARMV7_BKPT, ARMV7_HVC, ARMV7_SMC};
 			instruction->operation = operation[decode.op];
 			instruction->cond = (Condition)decode.cond;
-			instruction->operands[0].cls = IMM;
+			instruction->operands[0].cls = OC_IMM;
 			if (instruction->operation == ARMV7_SMC)
 				instruction->operands[0].imm = decode.set1.imm4;
 			else
@@ -2497,18 +2497,18 @@ uint32_t armv7_load_store_word_and_unsigned_byte(uint32_t instructionValue, Inst
 	instruction->operation = operation[decode.op1];
 	instruction->cond = (Condition)decode.cond;
 
-	static OperandClass memDecode[4] = { MEM_IMM, MEM_POST_IDX, MEM_IMM, MEM_PRE_IDX};
+	static OperandClass memDecode[4] = { OC_MEM_IMM, OC_MEM_POST_IDX, OC_MEM_IMM, OC_MEM_PRE_IDX};
 	uint32_t memtype = decode.stri.p << 1 | (decode.stri.p == 0 || decode.stri.w == 1);
-	instruction->operands[0].cls = REG;
+	instruction->operands[0].cls = OC_REG;
 	instruction->operands[0].reg = (Register)decode.stri.rt;
 	instruction->operands[1].reg = (Register)decode.stri.rn;
 	instruction->operands[1].flags.add = decode.stri.u;
 
 	if (decode.a == 0)
 	{
-		if (decode.stri.rn == REG_PC)
+		if (decode.stri.rn == ARMV7_REG_PC)
 		{
-			instruction->operands[1].cls = LABEL;
+			instruction->operands[1].cls = OC_LABEL;
 			if (decode.stri.u == 1)
 				instruction->operands[1].imm = ((address + 3) & ~3) + decode.stri.imm12 + 8;
 			else
@@ -2591,11 +2591,11 @@ uint32_t armv7_parallel_add_sub_signed(uint32_t instructionValue, Instruction* r
 
 	instruction->operation = operation[decode.op1][decode.op2];
 	instruction->cond = (Condition)decode.cond;
-	instruction->operands[0].cls = REG;
+	instruction->operands[0].cls = OC_REG;
 	instruction->operands[0].reg = (Register)decode.rd;
-	instruction->operands[1].cls = REG;
+	instruction->operands[1].cls = OC_REG;
 	instruction->operands[1].reg = (Register)decode.rn;
-	instruction->operands[2].cls = REG;
+	instruction->operands[2].cls = OC_REG;
 	instruction->operands[2].reg = (Register)decode.rm;
 	return instruction->operation == ARMV7_UNDEFINED;
 }
@@ -2659,11 +2659,11 @@ uint32_t armv7_parallel_add_sub_unsigned(uint32_t instructionValue, Instruction*
 
 	instruction->operation = operation[decode.op1][decode.op2];
 	instruction->cond = (Condition)decode.cond;
-	instruction->operands[0].cls = REG;
+	instruction->operands[0].cls = OC_REG;
 	instruction->operands[0].reg = (Register)decode.rd;
-	instruction->operands[1].cls = REG;
+	instruction->operands[1].cls = OC_REG;
 	instruction->operands[1].reg = (Register)decode.rn;
-	instruction->operands[2].cls = REG;
+	instruction->operands[2].cls = OC_REG;
 	instruction->operands[2].reg = (Register)decode.rm;
 	return instruction->operation == ARMV7_UNDEFINED;
 }
@@ -2750,11 +2750,11 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 				case 2:
 				case 4:
 				case 6:
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.pkh.rd;
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)decode.pkh.rn;
-					instruction->operands[2].cls = REG;
+					instruction->operands[2].cls = OC_REG;
 					instruction->operands[2].reg = (Register)decode.pkh.rm;
 					instruction->operands[2].imm = DecodeImmShift(
 							decode.pkh.tb << 1,
@@ -2770,14 +2770,14 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 					static Operation operation2[] = {ARMV7_SXTAB16, ARMV7_SXTB16};
 					uint32_t i = 0;
 					instruction->operation = operation2[decode.com.a == 15];
-					instruction->operands[i].cls = REG;
+					instruction->operands[i].cls = OC_REG;
 					instruction->operands[i++].reg = (Register)decode.sxtab.rd;
 					if (decode.com.a != 15)
 					{
-						instruction->operands[i].cls = REG;
+						instruction->operands[i].cls = OC_REG;
 						instruction->operands[i++].reg = (Register)decode.sxtab.rn;
 					}
-					instruction->operands[i].cls = REG;
+					instruction->operands[i].cls = OC_REG;
 					instruction->operands[i].reg = (Register)decode.sxtab.rm;
 					instruction->operands[i].shift = SHIFT_ROR;
 					instruction->operands[i].imm = decode.sxtab.rot << 3;
@@ -2785,11 +2785,11 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 					}
 				case 5:
 					instruction->operation = ARMV7_SEL;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.pkh.rd;
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)decode.pkh.rn;
-					instruction->operands[2].cls = REG;
+					instruction->operands[2].cls = OC_REG;
 					instruction->operands[2].reg = (Register)decode.pkh.rm;
 					break;
 				default:
@@ -2804,11 +2804,11 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 				case 4:
 				case 6:
 					instruction->operation = ARMV7_SSAT;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.ssat.rd;
-					instruction->operands[1].cls = IMM;
+					instruction->operands[1].cls = OC_IMM;
 					instruction->operands[1].imm = decode.ssat.sat_imm+1;
-					instruction->operands[2].cls = REG;
+					instruction->operands[2].cls = OC_REG;
 					instruction->operands[2].reg = (Register)decode.ssat.rn;
 					instruction->operands[2].imm = DecodeImmShift(
 							decode.ssat.sh << 1,
@@ -2817,11 +2817,11 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 					break;
 				case 1:
 					instruction->operation = ARMV7_SSAT16;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.ssat.rd;
-					instruction->operands[1].cls = IMM;
+					instruction->operands[1].cls = OC_IMM;
 					instruction->operands[1].imm = decode.ssat.sat_imm+1;
-					instruction->operands[2].cls = REG;
+					instruction->operands[2].cls = OC_REG;
 					instruction->operands[2].reg = (Register)decode.ssat.rn;
 					break;
 				case 3:
@@ -2829,14 +2829,14 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 					static Operation operation2[] = {ARMV7_SXTAB, ARMV7_SXTB};
 					instruction->operation = operation2[decode.com.a == 15];
 					uint32_t i = 0;
-					instruction->operands[i].cls = REG;
+					instruction->operands[i].cls = OC_REG;
 					instruction->operands[i++].reg = (Register)decode.pkh.rd;
 					if (decode.com.a != 15)
 					{
-						instruction->operands[i].cls = REG;
+						instruction->operands[i].cls = OC_REG;
 						instruction->operands[i++].reg = (Register)decode.pkh.rn;
 					}
-					instruction->operands[i].cls = REG;
+					instruction->operands[i].cls = OC_REG;
 					instruction->operands[i].shift = SHIFT_ROR;
 					instruction->operands[i].reg = (Register)decode.pkh.rm;
 					instruction->operands[i].imm = decode.sxtab.rot << 3;
@@ -2854,11 +2854,11 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 				case 4:
 				case 6:
 					instruction->operation = ARMV7_SSAT;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.ssat.rd;
-					instruction->operands[1].cls = IMM;
+					instruction->operands[1].cls = OC_IMM;
 					instruction->operands[1].imm = decode.ssat.sat_imm+1;
-					instruction->operands[2].cls = REG;
+					instruction->operands[2].cls = OC_REG;
 					instruction->operands[2].reg = (Register)decode.ssat.rn;
 					instruction->operands[2].imm = DecodeImmShift(
 							decode.ssat.sh << 1,
@@ -2867,9 +2867,9 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 					break;
 				case 1:
 					instruction->operation = ARMV7_REV;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.pkh.rd;
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)decode.pkh.rm;
 					break;
 				case 3:
@@ -2877,14 +2877,14 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 						static Operation operation2[2] = {ARMV7_SXTAH, ARMV7_SXTH};
 						instruction->operation = operation2[decode.com.a == 15];
 						uint32_t i = 0;
-						instruction->operands[i].cls = REG;
+						instruction->operands[i].cls = OC_REG;
 						instruction->operands[i++].reg = (Register)decode.sxtab.rd;
 						if (decode.com.a != 15)
 						{
-							instruction->operands[i].cls = REG;
+							instruction->operands[i].cls = OC_REG;
 							instruction->operands[i++].reg = (Register)decode.sxtab.rn;
 						}
-						instruction->operands[i].cls = REG;
+						instruction->operands[i].cls = OC_REG;
 						instruction->operands[i].shift = SHIFT_ROR;
 						instruction->operands[i].reg = (Register)decode.sxtab.rm;
 						instruction->operands[i].imm = decode.sxtab.rot << 3;
@@ -2892,9 +2892,9 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 					break;
 				case 5:
 					instruction->operation = ARMV7_REV16;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.pkh.rd;
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)decode.pkh.rm;
 					break;
 				default:
@@ -2907,14 +2907,14 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 			static Operation operation2[] = {ARMV7_UXTAB16, ARMV7_UXTB16};
 			instruction->operation = operation2[decode.com.a == 15];
 			uint32_t i = 0;
-			instruction->operands[i].cls = REG;
+			instruction->operands[i].cls = OC_REG;
 			instruction->operands[i++].reg = (Register)decode.pkh.rd;
 			if (decode.com.a != 15)
 			{
-				instruction->operands[i].cls = REG;
+				instruction->operands[i].cls = OC_REG;
 				instruction->operands[i++].reg = (Register)decode.pkh.rn;
 			}
-			instruction->operands[i].cls = REG;
+			instruction->operands[i].cls = OC_REG;
 			instruction->operands[i].shift = SHIFT_ROR;
 			instruction->operands[i].reg = (Register)decode.pkh.rm;
 			instruction->operands[i].imm = decode.sxtab.rot << 3;
@@ -2929,11 +2929,11 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 				case 4:
 				case 6:
 					instruction->operation = ARMV7_USAT;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.ssat.rd;
-					instruction->operands[1].cls = IMM;
+					instruction->operands[1].cls = OC_IMM;
 					instruction->operands[1].imm = decode.ssat.sat_imm;
-					instruction->operands[2].cls = REG;
+					instruction->operands[2].cls = OC_REG;
 					instruction->operands[2].reg = (Register)decode.ssat.rn;
 					instruction->operands[2].imm = DecodeImmShift(
 							decode.ssat.sh << 1,
@@ -2944,19 +2944,19 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 					if (decode.com.op1 == 6)
 					{
 						instruction->operation = ARMV7_USAT16;
-						instruction->operands[0].cls = REG;
+						instruction->operands[0].cls = OC_REG;
 						instruction->operands[0].reg = (Register)decode.ssat.rd;
-						instruction->operands[1].cls = IMM;
+						instruction->operands[1].cls = OC_IMM;
 						instruction->operands[1].imm = decode.ssat.sat_imm;
-						instruction->operands[2].cls = REG;
+						instruction->operands[2].cls = OC_REG;
 						instruction->operands[2].reg = (Register)decode.ssat.rn;
 					}
 					else //decode.com.op1 == 7
 					{
 						instruction->operation = ARMV7_RBIT;
-						instruction->operands[0].cls = REG;
+						instruction->operands[0].cls = OC_REG;
 						instruction->operands[0].reg = (Register)decode.pkh.rd;
-						instruction->operands[1].cls = REG;
+						instruction->operands[1].cls = OC_REG;
 						instruction->operands[1].reg = (Register)decode.pkh.rm;
 					}
 					break;
@@ -2973,14 +2973,14 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 						instruction->operation = operation2[decode.com.a == 15];
 					}
 					uint32_t i = 0;
-					instruction->operands[i].cls = REG;
+					instruction->operands[i].cls = OC_REG;
 					instruction->operands[i++].reg = (Register)decode.pkh.rd;
 					if (decode.com.a != 15)
 					{
-						instruction->operands[i].cls = REG;
+						instruction->operands[i].cls = OC_REG;
 						instruction->operands[i++].reg = (Register)decode.pkh.rn;
 					}
-					instruction->operands[i].cls = REG;
+					instruction->operands[i].cls = OC_REG;
 					instruction->operands[i].shift = SHIFT_ROR;
 					instruction->operands[i].reg = (Register)decode.pkh.rm;
 					instruction->operands[i].imm = decode.sxtab.rot << 3;
@@ -2988,9 +2988,9 @@ uint32_t armv7_parallel_add_sub_reversal(uint32_t instructionValue, Instruction*
 					break;
 				case 5:
 					instruction->operation = ARMV7_REVSH;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.pkh.rd;
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)decode.pkh.rm;
 					break;
 				default:
@@ -3062,15 +3062,15 @@ uint32_t armv7_parallel_add_sub_udiv(uint32_t instructionValue, Instruction* res
 				if (decode.com.op2 > 3)
 					break;
 				instruction->operation = operation[decode.smlad.m][decode.com.op2 >> 1][decode.com.a == 15];
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)decode.smlad.rd;
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)decode.smlad.rn;
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.smlad.rm;
 				if (decode.com.a != 15)
 				{
-					instruction->operands[3].cls = REG;
+					instruction->operands[3].cls = OC_REG;
 					instruction->operands[3].reg = (Register)decode.smlad.ra;
 				}
 			}
@@ -3079,11 +3079,11 @@ uint32_t armv7_parallel_add_sub_udiv(uint32_t instructionValue, Instruction* res
 			if (decode.com.op2 == 0)
 			{
 				instruction->operation = ARMV7_SDIV;
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)decode.smlad.rd;
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)decode.smlad.rn;
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.smlad.rm;
 			}
 			break;
@@ -3091,11 +3091,11 @@ uint32_t armv7_parallel_add_sub_udiv(uint32_t instructionValue, Instruction* res
 			if (decode.com.op2 == 0)
 			{
 				instruction->operation = ARMV7_UDIV;
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)decode.smlad.rd;
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)decode.smlad.rn;
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.smlad.rm;
 			}
 			break;
@@ -3109,13 +3109,13 @@ uint32_t armv7_parallel_add_sub_udiv(uint32_t instructionValue, Instruction* res
 					{ARMV7_SMLALDX, ARMV7_SMLSLDX}
 				};
 				instruction->operation = operation[decode.smlad.m][decode.com.op2 >> 1];
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)decode.smlad.ra;
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)decode.smlad.rd;
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.smlad.rn;
-				instruction->operands[3].cls = REG;
+				instruction->operands[3].cls = OC_REG;
 				instruction->operands[3].reg = (Register)decode.smlad.rm;
 			}
 			break;
@@ -3128,15 +3128,15 @@ uint32_t armv7_parallel_add_sub_udiv(uint32_t instructionValue, Instruction* res
 						{ARMV7_SMMLAR, ARMV7_SMMULR}
 					};
 					instruction->operation = operation[decode.smlad.m][decode.com.a == 15];
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.smlad.rd;
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)decode.smlad.rn;
-					instruction->operands[2].cls = REG;
+					instruction->operands[2].cls = OC_REG;
 					instruction->operands[2].reg = (Register)decode.smlad.rm;
 					if (decode.com.a != 15)
 					{
-						instruction->operands[3].cls = REG;
+						instruction->operands[3].cls = OC_REG;
 						instruction->operands[3].reg = (Register)decode.smlad.ra;
 					}
 				}
@@ -3144,13 +3144,13 @@ uint32_t armv7_parallel_add_sub_udiv(uint32_t instructionValue, Instruction* res
 				{
 					static Operation operation[2] = {ARMV7_SMMLS, ARMV7_SMMLSR};
 					instruction->operation = operation[decode.smlad.m];
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.smlad.rd;
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)decode.smlad.rn;
-					instruction->operands[2].cls = REG;
+					instruction->operands[2].cls = OC_REG;
 					instruction->operands[2].reg = (Register)decode.smlad.rm;
-					instruction->operands[3].cls = REG;
+					instruction->operands[3].cls = OC_REG;
 					instruction->operands[3].reg = (Register)decode.smlad.ra;
 				}
 			}
@@ -3231,23 +3231,23 @@ uint32_t armv7_media_instructions(uint32_t instructionValue, Instruction* restri
 				if (decode.com.rd == 15)
 				{
 					instruction->operation = ARMV7_USAD8;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.com.rx;
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)decode.com.rn;
-					instruction->operands[2].cls = REG;
+					instruction->operands[2].cls = OC_REG;
 					instruction->operands[2].reg = (Register)decode.com.rm;
 				}
 				else
 				{
 					instruction->operation = ARMV7_USADA8;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.com.rx;
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)decode.com.rn;
-					instruction->operands[2].cls = REG;
+					instruction->operands[2].cls = OC_REG;
 					instruction->operands[2].reg = (Register)decode.com.rm;
-					instruction->operands[3].cls = REG;
+					instruction->operands[3].cls = OC_REG;
 					instruction->operands[3].reg = (Register)decode.com.rd;
 				}
 			}
@@ -3257,13 +3257,13 @@ uint32_t armv7_media_instructions(uint32_t instructionValue, Instruction* restri
 			if ((decode.com.op2 & 3) == 2)
 			{
 				instruction->operation = ARMV7_SBFX;
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)decode.sbfx.rd;
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)decode.sbfx.rn;
-				instruction->operands[2].cls = IMM;
+				instruction->operands[2].cls = OC_IMM;
 				instruction->operands[2].imm = decode.sbfx.lsb;
-				instruction->operands[3].cls = IMM;
+				instruction->operands[3].cls = OC_IMM;
 				instruction->operands[3].imm = decode.sbfx.widthm1+1;
 			}
 			break;
@@ -3276,11 +3276,11 @@ uint32_t armv7_media_instructions(uint32_t instructionValue, Instruction* restri
 					instruction->operation = ARMV7_BFC;
 					if (decode.bfc.lsb > decode.bfc.msb)
 						decode.bfc.lsb = decode.bfc.msb;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.bfc.rd;
-					instruction->operands[1].cls = IMM;
+					instruction->operands[1].cls = OC_IMM;
 					instruction->operands[1].imm = decode.bfc.lsb;
-					instruction->operands[2].cls = IMM;
+					instruction->operands[2].cls = OC_IMM;
 					instruction->operands[2].imm = decode.bfc.msb + 1 - decode.bfc.lsb;
 				}
 				else
@@ -3289,13 +3289,13 @@ uint32_t armv7_media_instructions(uint32_t instructionValue, Instruction* restri
 					instruction->unpredictable = decode.bfc.lsb > decode.bfc.msb;
 					if (decode.bfc.lsb > decode.bfc.msb)
 						decode.bfc.lsb = decode.bfc.msb;
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)decode.bfc.rd;
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)decode.bfc.rn;
-					instruction->operands[2].cls = IMM;
+					instruction->operands[2].cls = OC_IMM;
 					instruction->operands[2].imm = decode.bfc.lsb;
-					instruction->operands[3].cls = IMM;
+					instruction->operands[3].cls = OC_IMM;
 					instruction->operands[3].imm = decode.bfc.msb + 1 - decode.bfc.lsb;
 				}
 			}
@@ -3305,20 +3305,20 @@ uint32_t armv7_media_instructions(uint32_t instructionValue, Instruction* restri
 			if ((decode.com.op2 & 3) == 2)
 			{
 				instruction->operation = ARMV7_UBFX;
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)decode.bfc.rd;
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)decode.bfc.rn;
-				instruction->operands[2].cls = IMM;
+				instruction->operands[2].cls = OC_IMM;
 				instruction->operands[2].imm = decode.bfc.lsb;
-				instruction->operands[3].cls = IMM;
+				instruction->operands[3].cls = OC_IMM;
 				instruction->operands[3].imm = decode.bfc.msb + 1;
 			}
 			else if ((decode.com.op2 & 3) == 3)
 			{
 				instruction->cond = (Condition)COND_NONE;
 				instruction->operation = ARMV7_UDF;
-				instruction->operands[0].cls = IMM;
+				instruction->operands[0].cls = OC_IMM;
 				instruction->operands[0].imm = (decode.udf.imm12 << 4) | decode.udf.imm4;
 			}
 			break;
@@ -3410,7 +3410,7 @@ uint32_t armv7_branch_and_block_data_transfer(uint32_t instructionValue, Instruc
 			instruction->operation = ARMV7_LDM;
 			break;
 		case 11:
-			if (decode.com.rn == REG_SP)
+			if (decode.com.rn == ARMV7_REG_SP)
 			{
 				instruction->operation = ARMV7_POP;
 				type = 1;
@@ -3424,7 +3424,7 @@ uint32_t armv7_branch_and_block_data_transfer(uint32_t instructionValue, Instruc
 			instruction->operation = ARMV7_STMDB;
 			break;
 		case 18:
-			if (decode.com.rn == REG_SP)
+			if (decode.com.rn == ARMV7_REG_SP)
 			{
 				instruction->operation = ARMV7_PUSH;
 				type = 1;
@@ -3496,50 +3496,50 @@ uint32_t armv7_branch_and_block_data_transfer(uint32_t instructionValue, Instruc
 	switch (type)
 	{
 		case 0:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.stmda.rn;
 			instruction->operands[0].flags.wb = decode.stmda.w;
-			instruction->operands[1].cls = REG_LIST;
+			instruction->operands[1].cls = OC_REG_LIST;
 			instruction->operands[1].flags.hasElements = 0;
 			instruction->operands[1].reg = (Register)(Register)decode.stmda.registerList;
 			break;
 		case 1:
-			instruction->operands[0].cls = REG_LIST;
+			instruction->operands[0].cls = OC_REG_LIST;
 			instruction->operands[0].flags.hasElements = 0;
 			instruction->operands[0].reg = (Register)(Register)decode.stmda.registerList;
 			break;
 		case 2: //w/o PC
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.stmda.rn;
 			instruction->operands[0].flags.wb = decode.stmda.w;
-			instruction->operands[1].cls = REG_LIST;
+			instruction->operands[1].cls = OC_REG_LIST;
 			instruction->operands[1].flags.hasElements = 0;
 			instruction->operands[1].reg = (Register)(Register)(decode.stmda.registerList & 0x7fff);
 			break;
 		case 3:
-			instruction->operands[0].cls = LABEL;
+			instruction->operands[0].cls = OC_LABEL;
 			instruction->operands[0].imm = 8 + (decode.b.imm << 2)+ address;
 			break;
 		case 4:
-			instruction->operands[0].cls = LABEL;
+			instruction->operands[0].cls = OC_LABEL;
 			//sign extend if the high bit of blx.imm is 1
 			instruction->operands[0].imm = address + 8 +
 				((int32_t)((decode.blx.imm << 2 | decode.blx.h << 1) << 6) >> 6);
 			break;
 		case 5:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.ldm.rn;
 			instruction->operands[0].flags.wb = decode.ldm.w;
-			instruction->operands[1].cls = REG_LIST;
+			instruction->operands[1].cls = OC_REG_LIST;
 			instruction->operands[1].reg = (Register)(Register)decode.ldm.registerList;
 			instruction->operands[1].flags.hasElements = 0;
 			instruction->operands[1].flags.wb = 1;
 			break;
 		case 6:
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.stmda.rn;
 			instruction->operands[0].flags.wb = decode.stmda.w;
-			instruction->operands[1].cls = REG_LIST;
+			instruction->operands[1].cls = OC_REG_LIST;
 			instruction->operands[1].reg = (Register)(Register)decode.stmda.registerList;
 			instruction->operands[1].flags.hasElements = 0;
 			instruction->operands[1].flags.wb = (decode.stmda.registerList >> 15) & 1;
@@ -3738,95 +3738,95 @@ uint32_t armv7_coprocessor_instruction_and_supervisor_call(uint32_t instructionV
 	}
 
 	static OperandClass memDecode[2][2] = {
-		{MEM_OPTION, MEM_POST_IDX},
-		{MEM_IMM,    MEM_PRE_IDX}
+		{OC_MEM_OPTION, OC_MEM_POST_IDX},
+		{OC_MEM_IMM,    OC_MEM_PRE_IDX}
 	};
 	instruction->operands[2].flags.add = 0;
 	switch (type)
 	{
 		case 0:
-			instruction->operands[0].cls = IMM;
+			instruction->operands[0].cls = OC_IMM;
 			instruction->operands[0].imm = decode.svc.imm;
 			break;
 		case 1:
-			instruction->operands[0].cls = REG_COPROCP;
+			instruction->operands[0].cls = OC_REG_COPROCP;
 			instruction->operands[0].reg = (Register)decode.stc.coproc;
-			instruction->operands[1].cls = REG_COPROCC;
+			instruction->operands[1].cls = OC_REG_COPROCC;
 			instruction->operands[1].reg = (Register)decode.stc.crd;
 			instruction->operands[2].cls = memDecode[decode.stc.p][decode.stc.w];
 			instruction->operands[2].reg = (Register)decode.stc.rn;
 			instruction->operands[2].flags.add = decode.stc.u;
-			if (instruction->operands[2].cls == MEM_OPTION)
+			if (instruction->operands[2].cls == OC_MEM_OPTION)
 				instruction->operands[2].imm = decode.stc.imm8;
 			else
 				instruction->operands[2].imm = decode.stc.imm8 << 2;
 
 			break;
 		case 2:
-			instruction->operands[0].cls = REG_COPROCP;
+			instruction->operands[0].cls = OC_REG_COPROCP;
 			instruction->operands[0].reg = (Register)decode.mrrc.coproc;
-			instruction->operands[1].cls = IMM;
+			instruction->operands[1].cls = OC_IMM;
 			instruction->operands[1].imm = decode.mrrc.opc1;
-			instruction->operands[2].cls = REG;
+			instruction->operands[2].cls = OC_REG;
 			instruction->operands[2].reg = (Register)decode.mrrc.rt;
-			instruction->operands[3].cls = REG;
+			instruction->operands[3].cls = OC_REG;
 			instruction->operands[3].reg = (Register)decode.mrrc.rt2;
-			instruction->operands[4].cls = REG_COPROCC;
+			instruction->operands[4].cls = OC_REG_COPROCC;
 			instruction->operands[4].reg = (Register)decode.mrrc.crm;
 			break;
 		case 3:
-			instruction->operands[0].cls = REG_COPROCP;
+			instruction->operands[0].cls = OC_REG_COPROCP;
 			instruction->operands[0].reg = (Register)decode.cdp.coproc;
-			instruction->operands[1].cls = IMM;
+			instruction->operands[1].cls = OC_IMM;
 			instruction->operands[1].imm = decode.cdp.opc1;
-			instruction->operands[2].cls = REG_COPROCC;
+			instruction->operands[2].cls = OC_REG_COPROCC;
 			instruction->operands[2].reg = (Register)decode.cdp.crd;
-			instruction->operands[3].cls = REG_COPROCC;
+			instruction->operands[3].cls = OC_REG_COPROCC;
 			instruction->operands[3].reg = (Register)decode.cdp.crn;
-			instruction->operands[4].cls = REG_COPROCC;
+			instruction->operands[4].cls = OC_REG_COPROCC;
 			instruction->operands[4].reg = (Register)decode.cdp.crm;
-			instruction->operands[5].cls = IMM;
+			instruction->operands[5].cls = OC_IMM;
 			instruction->operands[5].imm = decode.cdp.opc2;
 			break;
 		case 4:
-			instruction->operands[0].cls = REG_COPROCP;
+			instruction->operands[0].cls = OC_REG_COPROCP;
 			instruction->operands[0].reg = (Register)decode.mcr.coproc;
-			instruction->operands[1].cls = IMM;
+			instruction->operands[1].cls = OC_IMM;
 			instruction->operands[1].imm = decode.mcr.opc1;
-			instruction->operands[2].cls = REG;
+			instruction->operands[2].cls = OC_REG;
 			instruction->operands[2].reg = (Register)decode.mcr.crd;
-			instruction->operands[3].cls = REG_COPROCC;
+			instruction->operands[3].cls = OC_REG_COPROCC;
 			instruction->operands[3].reg = (Register)decode.mcr.crn;
-			instruction->operands[4].cls = REG_COPROCC;
+			instruction->operands[4].cls = OC_REG_COPROCC;
 			instruction->operands[4].reg = (Register)decode.mcr.crm;
 			if (decode.mcr.opc2 != 0)
 			{
-				instruction->operands[5].cls = IMM;
+				instruction->operands[5].cls = OC_IMM;
 				instruction->operands[5].imm = decode.mcr.opc2;
 			}
 			break;
 		case 5:
-			instruction->operands[0].cls = REG_COPROCP;
+			instruction->operands[0].cls = OC_REG_COPROCP;
 			instruction->operands[0].reg = (Register)decode.mcr.coproc;
-			instruction->operands[1].cls = IMM;
+			instruction->operands[1].cls = OC_IMM;
 			instruction->operands[1].imm = decode.mcr.opc1;
 			if (decode.mcr.crd == 15)
 			{
-				instruction->operands[2].cls = REG_SPEC;
+				instruction->operands[2].cls = OC_REG_SPEC;
 				instruction->operands[2].regs = REGS_APSR_NZCV;
 			}
 			else
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.mcr.crd;
 			}
-			instruction->operands[3].cls = REG_COPROCC;
+			instruction->operands[3].cls = OC_REG_COPROCC;
 			instruction->operands[3].reg = (Register)decode.mcr.crn;
-			instruction->operands[4].cls = REG_COPROCC;
+			instruction->operands[4].cls = OC_REG_COPROCC;
 			instruction->operands[4].reg = (Register)decode.mcr.crm;
 			if (decode.mcr.opc2 != 0)
 			{
-				instruction->operands[5].cls = IMM;
+				instruction->operands[5].cls = OC_IMM;
 				instruction->operands[5].imm = decode.mcr.opc2;
 			}
 			break;
@@ -3950,10 +3950,10 @@ uint32_t armv7_unconditional(uint32_t instructionValue, Instruction* restrict in
 				{ARMV7_SRSDB, ARMV7_SRSIB}
 			};
 			instruction->operation = operation[decode.srs.p][decode.srs.u];
-			instruction->operands[0].cls = REG;
-			instruction->operands[0].reg = (Register)REG_SP;
+			instruction->operands[0].cls = OC_REG;
+			instruction->operands[0].reg = (Register)ARMV7_REG_SP;
 			instruction->operands[0].flags.wb = decode.srs.w;
-			instruction->operands[1].cls = IMM;
+			instruction->operands[1].cls = OC_IMM;
 			instruction->operands[1].imm = decode.srs.mode;
 		}
 		else if (tmp == 17)
@@ -3963,14 +3963,14 @@ uint32_t armv7_unconditional(uint32_t instructionValue, Instruction* restrict in
 				{ARMV7_RFEDB, ARMV7_RFEIB}
 			};
 			instruction->operation = operation[decode.rfe.p][decode.rfe.u];
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)decode.rfe.rn;
 			instruction->operands[0].flags.wb = decode.srs.w;
 		}
 		else if (decode.com.op1 >> 5 == 5)
 		{
 			instruction->operation = ARMV7_BLX;
-			instruction->operands[0].cls = LABEL;
+			instruction->operands[0].cls = OC_LABEL;
 			//sign extend if the high bit of blx.imm is 1
 			instruction->operands[0].imm = address + 8 +
 				((int32_t)((decode.blx.imm24 << 2 | decode.blx.h << 1) << 6) >> 6);
@@ -3981,19 +3981,19 @@ uint32_t armv7_unconditional(uint32_t instructionValue, Instruction* restrict in
 			{
 				static Operation operation[2] = {ARMV7_CDP, ARMV7_CDP2};
 				instruction->operation = operation[decode.cdp.cond == 15];
-				instruction->operands[0].cls = REG_COPROCP;
+				instruction->operands[0].cls = OC_REG_COPROCP;
 				instruction->operands[0].reg = (Register)decode.cdp.coproc;
-				instruction->operands[1].cls = IMM;
+				instruction->operands[1].cls = OC_IMM;
 				instruction->operands[1].imm = decode.cdp.opc1;
-				instruction->operands[2].cls = REG_COPROCC;
+				instruction->operands[2].cls = OC_REG_COPROCC;
 				instruction->operands[2].reg = (Register)decode.cdp.crd;
-				instruction->operands[3].cls = REG_COPROCC;
+				instruction->operands[3].cls = OC_REG_COPROCC;
 				instruction->operands[3].reg = (Register)decode.cdp.crn;
-				instruction->operands[4].cls = REG_COPROCC;
+				instruction->operands[4].cls = OC_REG_COPROCC;
 				instruction->operands[4].reg = (Register)decode.cdp.crm;
 				if (decode.cdp.opc2 != 0)
 				{
-					instruction->operands[5].cls = IMM;
+					instruction->operands[5].cls = OC_IMM;
 					instruction->operands[5].imm = decode.cdp.opc2;
 				}
 			}
@@ -4004,27 +4004,27 @@ uint32_t armv7_unconditional(uint32_t instructionValue, Instruction* restrict in
 					{ARMV7_MRC, ARMV7_MRC2}
 				};
 				instruction->operation = operation[decode.com.op1 & 1][decode.com.cond == 15];
-				instruction->operands[0].cls = REG_COPROCP;
+				instruction->operands[0].cls = OC_REG_COPROCP;
 				instruction->operands[0].reg = (Register)decode.mrc.coproc;
-				instruction->operands[1].cls = IMM;
+				instruction->operands[1].cls = OC_IMM;
 				instruction->operands[1].imm = decode.mrc.opc1;
 				if ((decode.com.op1 & 1) == 1 && decode.mrc.rt == 15)
 				{
-					instruction->operands[2].cls = REG_SPEC;
+					instruction->operands[2].cls = OC_REG_SPEC;
 					instruction->operands[2].regs = REGS_APSR_NZCV;
 				}
 				else
 				{
-					instruction->operands[2].cls = REG;
+					instruction->operands[2].cls = OC_REG;
 					instruction->operands[2].reg = (Register)decode.mrc.rt;
 				}
-				instruction->operands[3].cls = REG_COPROCC;
+				instruction->operands[3].cls = OC_REG_COPROCC;
 				instruction->operands[3].reg = (Register)decode.mrc.crn;
-				instruction->operands[4].cls = REG_COPROCC;
+				instruction->operands[4].cls = OC_REG_COPROCC;
 				instruction->operands[4].reg = (Register)decode.mrc.crm;
 				if (decode.mrc.opc2 != 0)
 				{
-					instruction->operands[5].cls = IMM;
+					instruction->operands[5].cls = OC_IMM;
 					instruction->operands[5].imm = decode.mrc.opc2;
 				}
 			}
@@ -4033,30 +4033,30 @@ uint32_t armv7_unconditional(uint32_t instructionValue, Instruction* restrict in
 		{
 			static Operation operation[2] = {ARMV7_MCRR, ARMV7_MCRR2};
 			instruction->operation = operation[decode.com.cond == 15];
-			instruction->operands[0].cls = REG_COPROCP;
+			instruction->operands[0].cls = OC_REG_COPROCP;
 			instruction->operands[0].reg = (Register)decode.mcrr.coproc;
-			instruction->operands[1].cls = IMM;
+			instruction->operands[1].cls = OC_IMM;
 			instruction->operands[1].imm = decode.mcrr.opc1;
-			instruction->operands[2].cls = REG;
+			instruction->operands[2].cls = OC_REG;
 			instruction->operands[2].reg = (Register)decode.mcrr.rt;
-			instruction->operands[3].cls = REG;
+			instruction->operands[3].cls = OC_REG;
 			instruction->operands[3].reg = (Register)decode.mcrr.rt2;
-			instruction->operands[4].cls = REG_COPROCC;
+			instruction->operands[4].cls = OC_REG_COPROCC;
 			instruction->operands[4].reg = (Register)decode.mcrr.crm;
 		}
 		else if (decode.com.op1 == 197)
 		{
 			static Operation operation[2] = {ARMV7_MRRC, ARMV7_MRRC2};
 			instruction->operation = operation[decode.com.cond == 15];
-			instruction->operands[0].cls = REG_COPROCP;
+			instruction->operands[0].cls = OC_REG_COPROCP;
 			instruction->operands[0].reg = (Register)decode.mcrr.coproc;
-			instruction->operands[1].cls = IMM;
+			instruction->operands[1].cls = OC_IMM;
 			instruction->operands[1].imm = decode.mcrr.opc1;
-			instruction->operands[2].cls = REG;
+			instruction->operands[2].cls = OC_REG;
 			instruction->operands[2].reg = (Register)decode.mcrr.rt;
-			instruction->operands[3].cls = REG;
+			instruction->operands[3].cls = OC_REG;
 			instruction->operands[3].reg = (Register)decode.mcrr.rt2;
-			instruction->operands[4].cls = REG_COPROCC;
+			instruction->operands[4].cls = OC_REG_COPROCC;
 			instruction->operands[4].reg = (Register)decode.mcrr.crm;
 		}
 		else if ((decode.com.op1 & 1) == 0)
@@ -4066,17 +4066,17 @@ uint32_t armv7_unconditional(uint32_t instructionValue, Instruction* restrict in
 				{ARMV7_STCL, ARMV7_STC2L}
 			};
 			static OperandClass memDecode[2][2] = {
-				{MEM_OPTION, MEM_POST_IDX},
-				{MEM_IMM, MEM_PRE_IDX}
+				{OC_MEM_OPTION, OC_MEM_POST_IDX},
+				{OC_MEM_IMM, OC_MEM_PRE_IDX}
 			};
 			instruction->operation = operation[decode.stc.d][decode.stc.cond == 15];
-			instruction->operands[0].cls = REG_COPROCP;
+			instruction->operands[0].cls = OC_REG_COPROCP;
 			instruction->operands[0].reg = (Register)decode.stc.coproc;
-			instruction->operands[1].cls = REG_COPROCC;
+			instruction->operands[1].cls = OC_REG_COPROCC;
 			instruction->operands[1].reg = (Register)decode.stc.crd;
 			instruction->operands[2].cls = memDecode[decode.stc.p][decode.stc.w];
 			instruction->operands[2].reg = (Register)decode.stc.rn;
-			if (instruction->operands[2].cls == MEM_OPTION)
+			if (instruction->operands[2].cls == OC_MEM_OPTION)
 				instruction->operands[2].imm = decode.stc.imm;
 			else
 				instruction->operands[2].imm = decode.stc.imm << 2;
@@ -4089,19 +4089,19 @@ uint32_t armv7_unconditional(uint32_t instructionValue, Instruction* restrict in
 				{ARMV7_LDCL, ARMV7_LDC2L}
 			};
 			static OperandClass memDecode[2][2] = {
-				{MEM_OPTION, MEM_POST_IDX},
-				{MEM_IMM, MEM_PRE_IDX}
+				{OC_MEM_OPTION, OC_MEM_POST_IDX},
+				{OC_MEM_IMM, OC_MEM_PRE_IDX}
 			};
 			instruction->operation = operation[decode.stc.d][decode.stc.cond == 15];
-			instruction->operands[0].cls = REG_COPROCP;
+			instruction->operands[0].cls = OC_REG_COPROCP;
 			instruction->operands[0].reg = (Register)decode.stc.coproc;
-			instruction->operands[1].cls = REG_COPROCC;
+			instruction->operands[1].cls = OC_REG_COPROCC;
 			instruction->operands[1].reg = (Register)decode.stc.crd;
 			instruction->operands[2].cls = memDecode[decode.stc.p][decode.stc.w];
-			if (instruction->operands[2].cls != MEM_OPTION && decode.com.rn == REG_PC)
+			if (instruction->operands[2].cls != OC_MEM_OPTION && decode.com.rn == ARMV7_REG_PC)
 			{
 				//immediate
-				instruction->operands[2].cls = LABEL;
+				instruction->operands[2].cls = OC_LABEL;
 				if (decode.stc.u == 1)
 					instruction->operands[2].imm = 8 + (address & ~3) + (decode.stc.imm << 2);
 				else
@@ -4111,7 +4111,7 @@ uint32_t armv7_unconditional(uint32_t instructionValue, Instruction* restrict in
 			{
 				//literal
 				instruction->operands[2].reg = (Register)decode.stc.rn;
-				if (instruction->operands[2].cls == MEM_OPTION)
+				if (instruction->operands[2].cls == OC_MEM_OPTION)
 					instruction->operands[2].imm = decode.stc.imm;
 				else
 					instruction->operands[2].imm = decode.stc.imm << 2;
@@ -4190,19 +4190,19 @@ uint32_t armv7_memory_hints_simd_and_misc(uint32_t instructionValue, Instruction
 					uint32_t i = 0;
 					if ((decode.cps.m == 1 && decode.cps.aif != 0) || decode.cps.m == 0)
 					{
-					instruction->operands[i].cls = IFLAGS;
+					instruction->operands[i].cls = OC_IFLAGS;
 					instruction->operands[i++].iflag = (Iflags)decode.cps.aif;
 					}
 					if ((decode.cps.m == 0 &&decode.cps.mode != 0) || decode.cps.m == 1)
 					{
-					instruction->operands[i].cls = IMM;
+					instruction->operands[i].cls = OC_IMM;
 					instruction->operands[i].imm = decode.cps.mode;
 					}
 				}
 				else
 				{
 					instruction->operation = ARMV7_SETEND;
-					instruction->operands[0].cls = ENDIAN_SPEC;
+					instruction->operands[0].cls = OC_ENDIAN_SPEC;
 					instruction->operands[0].endian = (EndianSpec)((instructionValue >> 9) & 1);
 				}
 				break;
@@ -4213,7 +4213,7 @@ uint32_t armv7_memory_hints_simd_and_misc(uint32_t instructionValue, Instruction
 			case 69:
 			case 77:
 				instruction->operation = ARMV7_PLI;
-				instruction->operands[0].cls = MEM_IMM;
+				instruction->operands[0].cls = OC_MEM_IMM;
 				instruction->operands[0].reg = (Register)decode.pli.rn;
 				instruction->operands[0].imm = decode.pli.imm12;
 				instruction->operands[0].flags.add = decode.pli.u;
@@ -4223,7 +4223,7 @@ uint32_t armv7_memory_hints_simd_and_misc(uint32_t instructionValue, Instruction
 				{
 					static Operation operation[2] = {ARMV7_PLDW, ARMV7_PLD};
 					instruction->operation = operation[decode.pli.r];
-					instruction->operands[0].cls = MEM_IMM;
+					instruction->operands[0].cls = OC_MEM_IMM;
 					instruction->operands[0].reg = (Register)decode.pli.rn;
 					instruction->operands[0].imm = decode.pli.imm12;
 					instruction->operands[0].flags.add = decode.pli.u;
@@ -4235,7 +4235,7 @@ uint32_t armv7_memory_hints_simd_and_misc(uint32_t instructionValue, Instruction
 				{
 					static Operation operation[2] = {ARMV7_PLDW, ARMV7_PLD};
 					instruction->operation = operation[decode.pli.r];
-					instruction->operands[0].cls = MEM_IMM;
+					instruction->operands[0].cls = OC_MEM_IMM;
 					instruction->operands[0].reg = (Register)decode.pli.rn;
 					instruction->operands[0].imm = decode.pli.imm12;
 					instruction->operands[0].flags.add = decode.pli.u;
@@ -4243,7 +4243,7 @@ uint32_t armv7_memory_hints_simd_and_misc(uint32_t instructionValue, Instruction
 				//else
 				//{
 				//	instruction->operation = ARMV7_PLD;
-				//	instruction->operands[0].cls = LABEL;
+				//	instruction->operands[0].cls = OC_LABEL;
 				//	if (decode.pli.u == 1)
 				//		instruction->operands[0].imm = decode.pli.imm12 + address;
 				//	else
@@ -4258,17 +4258,17 @@ uint32_t armv7_memory_hints_simd_and_misc(uint32_t instructionValue, Instruction
 						break;
 					case 4:
 						instruction->operation = ARMV7_DSB;
-						instruction->operands[0].cls = DSB_OPTION;
+						instruction->operands[0].cls = OC_DSB_OPTION;
 						instruction->operands[0].dsbOpt = (DsbOption)(instructionValue & 15);
 						break;
 					case 5:
 						instruction->operation = ARMV7_DMB;
-						instruction->operands[0].cls = DSB_OPTION;
+						instruction->operands[0].cls = OC_DSB_OPTION;
 						instruction->operands[0].dsbOpt = (DsbOption)(instructionValue & 15);
 						break;
 					case 6:
 						instruction->operation = ARMV7_ISB;
-						instruction->operands[0].cls = DSB_OPTION;
+						instruction->operands[0].cls = OC_DSB_OPTION;
 						instruction->operands[0].dsbOpt = (DsbOption)(instructionValue & 15);
 						break;
 					default:
@@ -4283,7 +4283,7 @@ uint32_t armv7_memory_hints_simd_and_misc(uint32_t instructionValue, Instruction
 			case 109:
 				{
 				instruction->operation = ARMV7_PLI;
-				instruction->operands[0].cls = MEM_IMM;
+				instruction->operands[0].cls = OC_MEM_IMM;
 				instruction->operands[0].reg = (Register)decode.plir.rn;
 				instruction->operands[0].flags.add = decode.plir.u;
 				instruction->operands[0].offset = (Register)decode.plir.rm;
@@ -4299,7 +4299,7 @@ uint32_t armv7_memory_hints_simd_and_misc(uint32_t instructionValue, Instruction
 				{
 				static Operation operation[2] = {ARMV7_PLDW, ARMV7_PLD};
 				instruction->operation = operation[decode.pli.r];
-				instruction->operands[0].cls = MEM_IMM;
+				instruction->operands[0].cls = OC_MEM_IMM;
 				instruction->operands[0].reg = (Register)decode.plir.rn;
 				instruction->operands[0].flags.add = decode.plir.u;
 				instruction->operands[0].offset = (Register)decode.plir.rm;
@@ -4315,7 +4315,7 @@ uint32_t armv7_memory_hints_simd_and_misc(uint32_t instructionValue, Instruction
 				{
 				static Operation operation[2] = {ARMV7_PLDW, ARMV7_PLD};
 				instruction->operation = operation[decode.pli.r];
-				instruction->operands[0].cls = MEM_IMM;
+				instruction->operands[0].cls = OC_MEM_IMM;
 				instruction->operands[0].reg = (Register)decode.plir.rn;
 				instruction->operands[0].flags.add = decode.plir.u;
 				instruction->operands[0].offset = (Register)decode.plir.rm;
@@ -4412,13 +4412,13 @@ uint32_t armv7_simd_data_processing(uint32_t instructionValue, Instruction* rest
 		instruction->operation = ARMV7_VEXT;
 		instruction->dataType = DT_8;
 		instruction->cond = (Condition)COND_NONE;
-		instruction->operands[0].cls = REG;
+		instruction->operands[0].cls = OC_REG;
 		instruction->operands[0].reg = (Register)(regMap[decode.vext.q] + ((decode.vext.d << 4 | decode.vext.vd) >> decode.vext.q));
-		instruction->operands[1].cls = REG;
+		instruction->operands[1].cls = OC_REG;
 		instruction->operands[1].reg = (Register)(regMap[decode.vext.q] + ((decode.vext.n << 4 | decode.vext.vn) >> decode.vext.q));
-		instruction->operands[2].cls = REG;
+		instruction->operands[2].cls = OC_REG;
 		instruction->operands[2].reg = (Register)(regMap[decode.vext.q] + ((decode.vext.m << 4 | decode.vext.vm) >> decode.vext.q));
-		instruction->operands[3].cls = IMM;
+		instruction->operands[3].cls = OC_IMM;
 		instruction->operands[3].imm = decode.vext.imm4 * 8;
 		if (decode.vext.q)
 			instruction->operands[3].imm <<= 1;
@@ -4441,13 +4441,13 @@ uint32_t armv7_simd_data_processing(uint32_t instructionValue, Instruction* rest
 		static uint8_t sizeMap[4] = {1,3,7,15};
 		uint32_t n = (decode.vtbl.n << 4) | decode.vtbl.vn;
 		instruction->unpredictable = (n + decode.vtbl.len + 1) > 32;
-		instruction->operands[0].cls = REG;
-		instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vtbl.d << 4) | decode.vtbl.vd));
-		instruction->operands[1].cls = REG_LIST_DOUBLE;
+		instruction->operands[0].cls = OC_REG;
+		instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vtbl.d << 4) | decode.vtbl.vd));
+		instruction->operands[1].cls = OC_REG_LIST_DOUBLE;
 		instruction->operands[1].flags.hasElements = 0;
 		instruction->operands[1].reg = (Register)(sizeMap[decode.vtbl.len] << (n));
-		instruction->operands[2].cls = REG;
-		instruction->operands[2].reg = (Register)(REG_D0 + ((decode.vtbl.m << 4) | decode.vtbl.vm));
+		instruction->operands[2].cls = OC_REG;
+		instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + ((decode.vtbl.m << 4) | decode.vtbl.vm));
 	}
 	else if (decode.com.b == 12)
 	{
@@ -4455,10 +4455,10 @@ uint32_t armv7_simd_data_processing(uint32_t instructionValue, Instruction* rest
 			return 1;
 		instruction->operation = ARMV7_VDUP;
 		instruction->cond = (Condition)COND_NONE;
-		instruction->operands[0].cls = REG;
+		instruction->operands[0].cls = OC_REG;
 		instruction->operands[0].reg = (Register)(regMap[decode.vdup.q] + ((decode.vdup.d << 4 | decode.vdup.vd) >> decode.vdup.q));
-		instruction->operands[1].cls = REG;
-		instruction->operands[1].reg = (Register)(REG_D0 + (decode.vdup.m << 4 | decode.vdup.vm));
+		instruction->operands[1].cls = OC_REG;
+		instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + (decode.vdup.m << 4 | decode.vdup.vm));
 		instruction->operands[1].flags.hasElements = 1;
 
 		if ((decode.vdup.imm4 & 1) == 1)
@@ -4735,11 +4735,11 @@ uint32_t armv7_three_register_same(uint32_t instructionValue, Instruction* restr
 			}
 	}
 
-	instruction->operands[0].cls = REG;
+	instruction->operands[0].cls = OC_REG;
 	instruction->operands[0].reg = (Register)(regMap[decode.vh.q] + ((decode.vh.d << 4 | decode.vh.vd) >> decode.vh.q));
-	instruction->operands[src1].cls = REG;
+	instruction->operands[src1].cls = OC_REG;
 	instruction->operands[src1].reg = (Register)(regMap[decode.vh.q] + ((decode.vh.n << 4 | decode.vh.vn) >> decode.vh.q));
-	instruction->operands[src2].cls = REG;
+	instruction->operands[src2].cls = OC_REG;
 	instruction->operands[src2].reg = (Register)(regMap[decode.vh.q] + ((decode.vh.m << 4 | decode.vh.vm) >> decode.vh.q));
 	return instruction->operation == ARMV7_UNDEFINED;
 }
@@ -4810,12 +4810,12 @@ uint32_t armv7_three_register_different(uint32_t instructionValue, Instruction* 
 				};
 				instruction->operation = operation[decode.vcom.op];
 				instruction->dataType = dataType[decode.vcom.u][decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)(regMap[decode.vcom.op] + (((decode.vcom.n << 4) | decode.vcom.vn) >> decode.vcom.op));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
 				if ((decode.vcom.vd & 1) == 1 ||
 					(decode.vcom.op == 1 && (decode.vcom.vn & 1) == 1))
 					return 1;
@@ -4831,12 +4831,12 @@ uint32_t armv7_three_register_different(uint32_t instructionValue, Instruction* 
 				};
 				instruction->operation = operation[decode.vcom.op];
 				instruction->dataType = dataType[decode.vcom.u][decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)(regMap[decode.vcom.op] + (((decode.vcom.n << 4) | decode.vcom.vn) >> decode.vcom.op));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
 				if ((decode.vcom.vd & 1) == 1 ||
 					(decode.vcom.op == 1 && (decode.vcom.vn & 1) == 1))
 					return 1;
@@ -4849,12 +4849,12 @@ uint32_t armv7_three_register_different(uint32_t instructionValue, Instruction* 
 				static Operation operation[2] = {ARMV7_VADDHN, ARMV7_VRADDHN};
 				instruction->operation = operation[decode.com.u];
 				instruction->dataType = dataType[decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vcom.d << 4) | decode.vcom.vd));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_Q0 + (((decode.vcom.n << 4) | decode.vcom.vn) >> 1));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_Q0 + (((decode.vcom.m << 4) | decode.vcom.vm) >> 1));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.d << 4) | decode.vcom.vd));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.n << 4) | decode.vcom.vn) >> 1));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.m << 4) | decode.vcom.vm) >> 1));
 			}
 			break;
 		case 5:
@@ -4865,12 +4865,12 @@ uint32_t armv7_three_register_different(uint32_t instructionValue, Instruction* 
 				};
 				instruction->operation = ARMV7_VABAL;
 				instruction->dataType = dataType[decode.vcom.u][decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
 			}
 			break;
 		case 6:
@@ -4879,12 +4879,12 @@ uint32_t armv7_three_register_different(uint32_t instructionValue, Instruction* 
 				static Operation operation[2] = {ARMV7_VSUBHN, ARMV7_VRSUBHN};
 				instruction->operation = operation[decode.com.u];
 				instruction->dataType = dataType[decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vcom.d << 4) | decode.vcom.vd));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_Q0 + (((decode.vcom.n << 4) | decode.vcom.vn) >> 1));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_Q0 + (((decode.vcom.m << 4) | decode.vcom.vm) >> 1));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.d << 4) | decode.vcom.vd));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.n << 4) | decode.vcom.vn) >> 1));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.m << 4) | decode.vcom.vm) >> 1));
 			}
 			break;
 		case 7:
@@ -4896,12 +4896,12 @@ uint32_t armv7_three_register_different(uint32_t instructionValue, Instruction* 
 				};
 				instruction->operation = operation[decode.vcom.diff];
 				instruction->dataType = dataType[decode.vcom.u][decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
 			}
 			break;
 		case 8:
@@ -4914,12 +4914,12 @@ uint32_t armv7_three_register_different(uint32_t instructionValue, Instruction* 
 				};
 				instruction->operation = operation[decode.vcom.op2];
 				instruction->dataType = dataType[decode.vcom.u][decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
 			}
 			break;
 		case 9:
@@ -4930,12 +4930,12 @@ uint32_t armv7_three_register_different(uint32_t instructionValue, Instruction* 
 				static DataType dataType[4] = {DT_S8, DT_S16, DT_S32, DT_NONE};
 				instruction->operation = operation[decode.vcom.op2];
 				instruction->dataType = dataType[decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
 			}
 			break;
 		case 12: //op = 0
@@ -4946,12 +4946,12 @@ uint32_t armv7_three_register_different(uint32_t instructionValue, Instruction* 
 				};
 				instruction->operation = ARMV7_VMULL;
 				instruction->dataType = dataType[decode.vcom.u][decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
 			}
 			break;
 		case 13:
@@ -4960,12 +4960,12 @@ uint32_t armv7_three_register_different(uint32_t instructionValue, Instruction* 
 				static DataType dataType[4] = {DT_S8, DT_S16, DT_S32, DT_NONE};
 				instruction->operation = ARMV7_VQDMULL;
 				instruction->dataType = dataType[decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
 			}
 			break;
 		case 14: //op = 1
@@ -4973,12 +4973,12 @@ uint32_t armv7_three_register_different(uint32_t instructionValue, Instruction* 
 				static DataType dataType[4] = {DT_P8, DT_P16, DT_P32, DT_NONE};
 				instruction->operation = ARMV7_VMULL;
 				instruction->dataType = dataType[decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
 			}
 			break;
 	}
@@ -5044,14 +5044,14 @@ uint32_t armv7_two_register_scalar(uint32_t instructionValue, Instruction* restr
 				else
 					instruction->dataType = dtMap[1][decode.vcom.size][decode.vcom.q];
 
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				if (decode.vcom.l == 0)
 					instruction->operands[0].reg = (Register)(regMap[decode.vcom.q] + (((decode.vcom.d << 4) | decode.vcom.vd) >> decode.vcom.q));
 				else
-					instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
+					instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)(regMap[decode.vcom.q] + (((decode.vcom.n << 4) | decode.vcom.vn) >> decode.vcom.q));
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].flags.hasElements = 1;
 				if (decode.vcom.size == 0 || (decode.vcom.f == 1 && decode.vcom.size == 1))
 				{
@@ -5059,12 +5059,12 @@ uint32_t armv7_two_register_scalar(uint32_t instructionValue, Instruction* restr
 				}
 				else if (decode.vcom.size == 1)
 				{
-					instruction->operands[2].reg = (Register)(REG_D0 + (decode.vcom.vm & 7));
+					instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + (decode.vcom.vm & 7));
 					instruction->operands[2].imm = (decode.vcom.m << 1) |(decode.vcom.vm >> 3);
 				}
 				else if (decode.vcom.size == 2)
 				{
-					instruction->operands[2].reg = (Register)(REG_D0 + (decode.vcom.vm));
+					instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + (decode.vcom.vm));
 					instruction->operands[2].imm = decode.vcom.m;
 				}
 				else
@@ -5085,23 +5085,23 @@ uint32_t armv7_two_register_scalar(uint32_t instructionValue, Instruction* restr
 				{
 					//Encoding T1/A1
 					instruction->operation = operation[decode.vcom.l];
-					instruction->operands[0].cls = REG;
-					instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-					instruction->operands[1].cls = REG;
-					instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
-					instruction->operands[2].cls = REG;
-					instruction->operands[2].reg = (Register)(REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
+					instruction->operands[0].cls = OC_REG;
+					instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+					instruction->operands[1].cls = OC_REG;
+					instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
+					instruction->operands[2].cls = OC_REG;
+					instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.m << 4) | decode.vcom.vm));
 				}
 				else
 				{
 					//Encoding T2/A2
 					instruction->operation = operation[decode.vcom.op];
-					instruction->operands[0].cls = REG;
-					instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-					instruction->operands[1].cls = REG;
-					instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
-					instruction->operands[2].cls = REG;
-					instruction->operands[2].reg = (Register)(REG_D0 + (decode.vcom.vm & 7));
+					instruction->operands[0].cls = OC_REG;
+					instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+					instruction->operands[1].cls = OC_REG;
+					instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
+					instruction->operands[2].cls = OC_REG;
+					instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + (decode.vcom.vm & 7));
 					if (decode.vcom.size == 1)
 						instruction->operands[2].imm = (decode.vcom.m << 1) | (decode.vcom.vm >> 3);
 					else
@@ -5120,20 +5120,20 @@ uint32_t armv7_two_register_scalar(uint32_t instructionValue, Instruction* restr
 				};
 				instruction->operation = ARMV7_VMUL;
 				instruction->dataType = dtMap[decode.vcom.f][decode.vcom.size];
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)(regMap[decode.vcom.q] + (((decode.vcom.d << 4) | decode.vcom.vd) >> decode.vcom.q));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)(regMap[decode.vcom.q] + (((decode.vcom.n << 4) | decode.vcom.vn) >> decode.vcom.q));
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].flags.hasElements = 1;
 				if (decode.vcom.size == 1)
 				{
-					instruction->operands[2].reg = (Register)(REG_D0 + (decode.vcom.vm & 7));
+					instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + (decode.vcom.vm & 7));
 					instruction->operands[2].imm = (decode.vcom.m << 1) | (decode.vcom.vm >> 3);
 				}
 				else if (decode.vcom.size == 2)
 				{
-					instruction->operands[2].reg = (Register)(REG_D0 + (decode.vcom.vm));
+					instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + (decode.vcom.vm));
 					instruction->operands[2].imm = decode.vcom.m;
 				}
 				else
@@ -5145,20 +5145,20 @@ uint32_t armv7_two_register_scalar(uint32_t instructionValue, Instruction* restr
 				static DataType dtMap[4] = {DT_NONE, DT_S16, DT_S32, DT_NONE};
 				instruction->operation = ARMV7_VMULL;
 				instruction->dataType = dtMap[decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_D0 + (((decode.vcom.n << 4) | decode.vcom.vn) >> decode.vcom.q));
-				instruction->operands[2].cls = REG;
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + (((decode.vcom.n << 4) | decode.vcom.vn) >> decode.vcom.q));
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].flags.hasElements = 1;
 				if (decode.vcom.size == 1)
 				{
-					instruction->operands[2].reg = (Register)(REG_D0 + (decode.vcom.vm & 7));
+					instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + (decode.vcom.vm & 7));
 					instruction->operands[2].imm = (decode.vcom.m << 1) | (decode.vcom.vm >> 3);
 				}
 				else if (decode.vcom.size == 2)
 				{
-					instruction->operands[2].reg = (Register)(REG_D0 + (decode.vcom.vm));
+					instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + (decode.vcom.vm));
 					instruction->operands[2].imm = decode.vcom.m;
 				}
 				else
@@ -5171,12 +5171,12 @@ uint32_t armv7_two_register_scalar(uint32_t instructionValue, Instruction* restr
 				static DataType dtMap[4] = {DT_NONE, DT_S16, DT_S32, DT_NONE};
 				instruction->operation = ARMV7_VQDMULL;
 				instruction->dataType = dtMap[decode.vcom.size];
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + (decode.vcom.vm & 7));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcom.d << 4) | decode.vcom.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcom.n << 4) | decode.vcom.vn));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + (decode.vcom.vm & 7));
 				instruction->operands[2].imm = (decode.vcom.m << 1) | (decode.vcom.vm >> 3);
 				instruction->operands[2].flags.hasElements = 1;
 
@@ -5188,12 +5188,12 @@ uint32_t armv7_two_register_scalar(uint32_t instructionValue, Instruction* restr
 				static DataType dtMap[4] = {DT_NONE, DT_S16, DT_S32, DT_NONE};
 				instruction->operation = ARMV7_VQDMULH;
 				instruction->dataType = dtMap[decode.vcom.size];
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)(regMap[decode.vcom.q] + (decode.vcom.vd));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)(regMap[decode.vcom.q] + (decode.vcom.vn));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + (decode.vcom.vm & 7));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + (decode.vcom.vm & 7));
 				instruction->operands[2].imm = (decode.vcom.m << 1) | (decode.vcom.vm >> 3);
 				instruction->operands[2].flags.hasElements = 1;
 			}
@@ -5204,12 +5204,12 @@ uint32_t armv7_two_register_scalar(uint32_t instructionValue, Instruction* restr
 				static DataType dtMap[4] = {DT_NONE, DT_S16, DT_S32, DT_NONE};
 				instruction->operation = ARMV7_VQRDMULH;
 				instruction->dataType = dtMap[decode.vcom.size];
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)(((regMap[decode.vcom.q] + (((decode.vcom.d << 4) | decode.vcom.vd))) >> decode.vcom.q));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)(((regMap[decode.vcom.q] + (((decode.vcom.n << 4) | decode.vcom.vn))) >> decode.vcom.q));
-				instruction->operands[2].cls = REG;
-				instruction->operands[2].reg = (Register)(REG_D0 + (decode.vcom.vm & 7));
+				instruction->operands[2].cls = OC_REG;
+				instruction->operands[2].reg = (Register)(ARMV7_REG_D0 + (decode.vcom.vm & 7));
 				instruction->operands[2].imm = (decode.vcom.m << 1) | (decode.vcom.vm >> 3);
 				instruction->operands[2].flags.hasElements = 1;
 			}
@@ -5295,13 +5295,13 @@ uint32_t armv7_two_register_and_shift(uint32_t instructionValue, Instruction* re
 					{DT_U8, DT_U16, DT_U32, DT_U64}
 				};
 				uint32_t imm = (decode.vshr.l << 6) | decode.vshr.imm6;
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)
 					(regMap[decode.vshr.q] + (((decode.vshr.d << 4) | decode.vshr.vd) >> decode.vshr.q));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)
 					(regMap[decode.vshr.q] + (((decode.vshr.m << 4) | decode.vshr.vm) >> decode.vshr.q));
-				instruction->operands[2].cls = IMM;
+				instruction->operands[2].cls = OC_IMM;
 				if (imm < 16)
 				{
 					instruction->operands[2].imm = 16 - decode.vshr.imm6;
@@ -5328,13 +5328,13 @@ uint32_t armv7_two_register_and_shift(uint32_t instructionValue, Instruction* re
 			if (decode.com.u == 1)
 			{
 				instruction->operation = ARMV7_VSRI;
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)
 					(regMap[decode.vshr.q] + (((decode.vshr.d << 4) | decode.vshr.vd) >> decode.vshr.q));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)
 					(regMap[decode.vshr.q] + (((decode.vshr.m << 4) | decode.vshr.vm) >> decode.vshr.q));
-				instruction->operands[2].cls = IMM;
+				instruction->operands[2].cls = OC_IMM;
 				uint32_t imm = (decode.vshr.l << 6) | decode.vshr.imm6;
 				if (imm < 16)
 				{
@@ -5362,13 +5362,13 @@ uint32_t armv7_two_register_and_shift(uint32_t instructionValue, Instruction* re
 			if (decode.com.u == 0)
 			{
 				instruction->operation = ARMV7_VSHL;
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)
 					(regMap[decode.vshr.q] + (((decode.vshr.d << 4) | decode.vshr.vd) >> decode.vshr.q));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)
 					(regMap[decode.vshr.q] + (((decode.vshr.m << 4) | decode.vshr.vm) >> decode.vshr.q));
-				instruction->operands[2].cls = IMM;
+				instruction->operands[2].cls = OC_IMM;
 				uint32_t imm = (decode.vshr.l << 6) | decode.vshr.imm6;
 				if (imm < 16)
 				{
@@ -5394,11 +5394,11 @@ uint32_t armv7_two_register_and_shift(uint32_t instructionValue, Instruction* re
 			else
 			{
 				instruction->operation = ARMV7_VSLI;
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)(regMap[decode.vshr.q] + (((decode.vshr.d << 4) | decode.vshr.vd) >> decode.vshr.q));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)(regMap[decode.vshr.q] + (((decode.vshr.m << 4) | decode.vshr.vm) >> decode.vshr.q));
-				instruction->operands[2].cls = IMM;
+				instruction->operands[2].cls = OC_IMM;
 				uint32_t imm = (decode.vshr.l << 6) | decode.vshr.imm6;
 				if (imm < 16)
 				{
@@ -5440,11 +5440,11 @@ uint32_t armv7_two_register_and_shift(uint32_t instructionValue, Instruction* re
 					{DT_U8, DT_U16, DT_U32, DT_U64},
 					{DT_S8, DT_S16, DT_S32, DT_S64}
 				};
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)(regMap[decode.vshr.q] + (((decode.vshr.d << 4) | decode.vshr.vd) >> decode.vshr.q));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)(regMap[decode.vshr.q] + (((decode.vshr.m << 4) | decode.vshr.vm) >> decode.vshr.q));
-				instruction->operands[2].cls = IMM;
+				instruction->operands[2].cls = OC_IMM;
 				uint32_t imm = (decode.vshr.l << 6) | decode.vshr.imm6;
 				if (imm < 16)
 				{
@@ -5475,11 +5475,11 @@ uint32_t armv7_two_register_and_shift(uint32_t instructionValue, Instruction* re
 				{
 					static Operation operation[2] = {ARMV7_VSHRN, ARMV7_VRSHRN};
 					instruction->operation = operation[decode.com.b];
-					instruction->operands[0].cls = REG;
-					instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vshr.d << 4) | decode.vshr.vd));
-					instruction->operands[1].cls = REG;
-					instruction->operands[1].reg = (Register)(REG_Q0 + (((decode.vshr.m << 4) | decode.vshr.vm) >> 1));
-					instruction->operands[2].cls = IMM;
+					instruction->operands[0].cls = OC_REG;
+					instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vshr.d << 4) | decode.vshr.vd));
+					instruction->operands[1].cls = OC_REG;
+					instruction->operands[1].reg = (Register)(ARMV7_REG_Q0 + (((decode.vshr.m << 4) | decode.vshr.vm) >> 1));
+					instruction->operands[2].cls = OC_IMM;
 					uint32_t imm = decode.vshr.imm6;
 					if (imm < 16)
 					{
@@ -5505,11 +5505,11 @@ uint32_t armv7_two_register_and_shift(uint32_t instructionValue, Instruction* re
 						{DT_U8, DT_U16, DT_U32, DT_U64},
 						{DT_S8, DT_S16, DT_S32, DT_S64}
 					};
-					instruction->operands[0].cls = REG;
-					instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vshr.d << 4) | decode.vshr.vd));
-					instruction->operands[1].cls = REG;
-					instruction->operands[1].reg = (Register)(REG_Q0 + (((decode.vshr.m << 4) | decode.vshr.vm) >> 1));
-					instruction->operands[2].cls = IMM;
+					instruction->operands[0].cls = OC_REG;
+					instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vshr.d << 4) | decode.vshr.vd));
+					instruction->operands[1].cls = OC_REG;
+					instruction->operands[1].reg = (Register)(ARMV7_REG_Q0 + (((decode.vshr.m << 4) | decode.vshr.vm) >> 1));
+					instruction->operands[2].cls = OC_IMM;
 					uint32_t imm = decode.vshr.imm6;
 					if (imm < 16)
 					{
@@ -5538,11 +5538,11 @@ uint32_t armv7_two_register_and_shift(uint32_t instructionValue, Instruction* re
 					{DT_S8, DT_S16, DT_S32, DT_S64},
 					{DT_U8, DT_U16, DT_U32, DT_U64}
 				};
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vshr.d << 4) | decode.vshr.vd));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_Q0 + (((decode.vshr.m << 4) | decode.vshr.vm) >> 1));
-				instruction->operands[2].cls = IMM;
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vshr.d << 4) | decode.vshr.vd));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_Q0 + (((decode.vshr.m << 4) | decode.vshr.vm) >> 1));
+				instruction->operands[2].cls = OC_IMM;
 				uint32_t imm = decode.vshr.imm6;
 				if (imm < 16)
 				{
@@ -5570,11 +5570,11 @@ uint32_t armv7_two_register_and_shift(uint32_t instructionValue, Instruction* re
 					{DT_U8, DT_U16, DT_U32, DT_U64}
 				};
 				uint32_t imm = decode.vshr.imm6;
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vshr.d << 4) | decode.vshr.vd) >> 1));
-				instruction->operands[1].cls = REG;
-				instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vshr.m << 4) | decode.vshr.vm));
-				instruction->operands[2].cls = IMM;
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vshr.d << 4) | decode.vshr.vd) >> 1));
+				instruction->operands[1].cls = OC_REG;
+				instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vshr.m << 4) | decode.vshr.vm));
+				instruction->operands[2].cls = OC_IMM;
 				if (imm < 16)
 				{
 					instruction->operands[2].imm = decode.vshr.imm6 - 8;
@@ -5593,7 +5593,7 @@ uint32_t armv7_two_register_and_shift(uint32_t instructionValue, Instruction* re
 				if (instruction->operands[2].imm == 0)
 				{
 					instruction->operation = ARMV7_VMOVL;
-					instruction->operands[2].cls = NONE;
+					instruction->operands[2].cls = OC_NONE;
 				}
 			}
 			break;
@@ -5601,13 +5601,13 @@ uint32_t armv7_two_register_and_shift(uint32_t instructionValue, Instruction* re
 		case 15:
 			instruction->operation = ARMV7_VCVT;
 			static DataType dtMap[2] = {DT_S32, DT_U32};
-			instruction->operands[0].cls = REG;
+			instruction->operands[0].cls = OC_REG;
 			instruction->operands[0].reg = (Register)
 				(regMap[decode.vshr.q] + (((decode.vshr.d << 4) | decode.vshr.vd) >> decode.vshr.q));
-			instruction->operands[1].cls = REG;
+			instruction->operands[1].cls = OC_REG;
 			instruction->operands[1].reg = (Register)
 				(regMap[decode.vshr.q] + (((decode.vshr.m << 4) | decode.vshr.vm) >> decode.vshr.q));
-			instruction->operands[2].cls = IMM;
+			instruction->operands[2].cls = OC_IMM;
 			instruction->operands[2].imm = 64 - decode.vshr.imm6;
 			if (decode.vshr.op == 1)
 			{
@@ -5821,9 +5821,9 @@ uint32_t armv7_two_register_misc(uint32_t instructionValue, Instruction* restric
 						instruction->dataType = dtMap[0][decode.vrev.size];
 						break;
 				}
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)(regMap[decode.vrev.q] + (((decode.vrev.d << 4) | decode.vrev.vd) >> decode.vrev.q));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)(regMap[decode.vrev.q] + (((decode.vrev.m << 4) | decode.vrev.vm) >> decode.vrev.q));
 			}
 			break;
@@ -5912,13 +5912,13 @@ uint32_t armv7_two_register_misc(uint32_t instructionValue, Instruction* restric
 						break;
 				}
 
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)(regMap[decode.vcgt.q] + (((decode.vrev.d << 4) | decode.vcgt.vd) >> decode.vcgt.q));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)(regMap[decode.vcgt.q] + (((decode.vcgt.m << 4) | decode.vcgt.vm) >> decode.vcgt.q));
 				if (type == 0)
 				{
-					instruction->operands[2].cls = IMM;
+					instruction->operands[2].cls = OC_IMM;
 					instruction->operands[2].imm = 0;
 				}
 			}
@@ -5998,7 +5998,7 @@ uint32_t armv7_two_register_misc(uint32_t instructionValue, Instruction* restric
 						break;
 					case 12:
 						instruction->operation = ARMV7_VSHLL;
-						instruction->operands[2].cls = IMM;
+						instruction->operands[2].cls = OC_IMM;
 						instruction->operands[2].imm = 8 << decode.vqmov.size;
 						instruction->dataType = dtMap[1][decode.vqmov.size];
 						type = 1;
@@ -6017,30 +6017,30 @@ uint32_t armv7_two_register_misc(uint32_t instructionValue, Instruction* restric
 
 				if (type == 0)
 				{
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)(regMap[decode.vcgt.q] + (((decode.vrev.d << 4) | decode.vcgt.vd) >> decode.vcgt.q));
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)(regMap[decode.vcgt.q] + (((decode.vcgt.m << 4) | decode.vcgt.vm) >> decode.vcgt.q));
 				}
 				else if (type == 1)
 				{
-					instruction->operands[0].cls = REG;
-					instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vrev.d << 4) | decode.vcgt.vd) >> 1));
-					instruction->operands[1].cls = REG;
-					instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcgt.m << 4) | decode.vcgt.vm));
+					instruction->operands[0].cls = OC_REG;
+					instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vrev.d << 4) | decode.vcgt.vd) >> 1));
+					instruction->operands[1].cls = OC_REG;
+					instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcgt.m << 4) | decode.vcgt.vm));
 				}
 				else if (type == 2)
 				{
-					instruction->operands[0].cls = REG;
-					instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vrev.d << 4) | decode.vcgt.vd));
-					instruction->operands[1].cls = REG;
-					instruction->operands[1].reg = (Register)(REG_Q0 + (((decode.vcgt.m << 4) | decode.vcgt.vm) >> 1));
+					instruction->operands[0].cls = OC_REG;
+					instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vrev.d << 4) | decode.vcgt.vd));
+					instruction->operands[1].cls = OC_REG;
+					instruction->operands[1].reg = (Register)(ARMV7_REG_Q0 + (((decode.vcgt.m << 4) | decode.vcgt.vm) >> 1));
 				}
 				else
 				{
-					instruction->operands[0].cls = REG;
+					instruction->operands[0].cls = OC_REG;
 					instruction->operands[0].reg = (Register)(regMap[decode.vcvt.op] + (((decode.vrev.d << 4) | decode.vcgt.vd) >> decode.vcvt.op));
-					instruction->operands[1].cls = REG;
+					instruction->operands[1].cls = OC_REG;
 					instruction->operands[1].reg = (Register)(regMap[!decode.vcvt.op] + (((decode.vcgt.m << 4) | decode.vcgt.vm) >> !decode.vcvt.op));
 				}
 
@@ -6095,9 +6095,9 @@ uint32_t armv7_two_register_misc(uint32_t instructionValue, Instruction* restric
 						}
 						break;
 				}
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)(regMap[decode.vcgt.q] + (((decode.vcgt.d << 4) | decode.vcgt.vd) >> decode.vcgt.q));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)(regMap[decode.vcgt.q] + (((decode.vcgt.m << 4) | decode.vcgt.vm) >> decode.vcgt.q));
 			}
 			break;
@@ -6201,9 +6201,9 @@ uint32_t armv7_one_register_and_modified_imm(uint32_t instructionValue, Instruct
 				break;
 		}
 	}
-	instruction->operands[0].cls = REG;
+	instruction->operands[0].cls = OC_REG;
 	instruction->operands[0].reg = (Register)(regMap[decode.vmov.q] + (((decode.vmov.d << 4) | decode.vmov.vd) >> decode.vmov.q));
-	instruction->operands[1].cls = IMM;
+	instruction->operands[1].cls = OC_IMM;
 	if (simdExpandImm(
 			decode.vmov.op,
 			decode.vmov.cmode,
@@ -6488,23 +6488,23 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 			* VCVT<c>.F32.<Td>   <Sd>, <Sd>, #<fbits>
 			*/
 			type = 1;
-			static uint32_t fregMap[2] = {REG_S0, REG_D0};
+			static uint32_t fregMap[2] = {ARMV7_REG_S0, ARMV7_REG_D0};
 			if ((decode.com.opc3 & 1) == 0)
 			{
 				instruction->operation = ARMV7_VMOV;
 				if (decode.vmla.sz == 0)
 				{
-					instruction->operands[0].cls = REG;
-					instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vmov.vd << 1) | decode.vmov.d));
-					instruction->operands[1].cls = FIMM32;
+					instruction->operands[0].cls = OC_REG;
+					instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vmov.vd << 1) | decode.vmov.d));
+					instruction->operands[1].cls = OC_FIMM32;
 					instruction->operands[1].imm =
 						VFPExpandImm32(decode.vmov.imm4h << 4 | decode.vmov.imm4l);
 				}
 				else
 				{
-					instruction->operands[0].cls = REG;
-					instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vmov.d << 4) | decode.vmov.vd));
-					instruction->operands[1].cls = FIMM64;
+					instruction->operands[0].cls = OC_REG;
+					instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vmov.d << 4) | decode.vmov.vd));
+					instruction->operands[1].cls = OC_FIMM64;
 					instruction->operands[1].imm64 =
 						VFPExpandImm64(decode.vmov.imm4h << 4 | decode.vmov.imm4l);
 				}
@@ -6515,21 +6515,21 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 				{
 					case 0:
 						{
-							static OperandClass immMap[2] = {FIMM32, FIMM64};
-							instruction->operands[0].cls = REG;
+							static OperandClass immMap[2] = {OC_FIMM32, OC_FIMM64};
+							instruction->operands[0].cls = OC_REG;
 							if (decode.com.opc3 == 1)
 							{
 								instruction->operation = ARMV7_VMOV;
 								if (decode.vmla.sz == 0)
 								{
-									instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vmla.vd << 1) | decode.vmla.d));
+									instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.vd << 1) | decode.vmla.d));
 									instruction->operands[1].cls = immMap[decode.vmla.sz];
 									instruction->operands[1].imm =
 										VFPExpandImm32(decode.vmla.vn << 4 | decode.vmla.vm);
 								}
 								else
 								{
-									instruction->operands[0].reg = (Register)(REG_Q0 + (((decode.vmla.d << 4) | decode.vmla.vd) >> 1));
+									instruction->operands[0].reg = (Register)(ARMV7_REG_Q0 + (((decode.vmla.d << 4) | decode.vmla.vd) >> 1));
 									instruction->operands[1].cls = immMap[decode.vmla.sz];
 									instruction->operands[1].imm64 =
 										VFPExpandImm64(decode.vmla.vn << 4 | decode.vmla.vm);
@@ -6540,17 +6540,17 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 								instruction->operation = ARMV7_VABS;
 								if (decode.vmla.sz == 0)
 								{
-									instruction->operands[0].cls = REG;
-									instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
-									instruction->operands[1].cls = REG;
-									instruction->operands[1].reg = (Register)(REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
+									instruction->operands[0].cls = OC_REG;
+									instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
+									instruction->operands[1].cls = OC_REG;
+									instruction->operands[1].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
 								}
 								else
 								{
-									instruction->operands[0].cls = REG;
-									instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
-									instruction->operands[1].cls = REG;
-									instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
+									instruction->operands[0].cls = OC_REG;
+									instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
+									instruction->operands[1].cls = OC_REG;
+									instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
 								}
 							}
 						}
@@ -6564,17 +6564,17 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 							instruction->operation = operation[decode.com.opc3];
 							if (decode.vmla.sz == 0)
 							{
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
-								instruction->operands[1].cls = REG;
-								instruction->operands[1].reg = (Register)(REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
+								instruction->operands[1].cls = OC_REG;
+								instruction->operands[1].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
 							}
 							else
 							{
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
-								instruction->operands[1].cls = REG;
-								instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
+								instruction->operands[1].cls = OC_REG;
+								instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
 							}
 						}
 						break;
@@ -6591,27 +6591,27 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 							instruction->dataType2 = dtMap[decode.vcvtt.sz][decode.vcvtt.op];
 							if (decode.vcvtt.sz == 0)
 							{
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vcvtt.vd << 1) | decode.vcvtt.d));
-								instruction->operands[1].cls = REG;
-								instruction->operands[1].reg = (Register)(REG_S0 + ((decode.vcvtt.vm << 1) | decode.vcvtt.m));
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vcvtt.vd << 1) | decode.vcvtt.d));
+								instruction->operands[1].cls = OC_REG;
+								instruction->operands[1].reg = (Register)(ARMV7_REG_S0 + ((decode.vcvtt.vm << 1) | decode.vcvtt.m));
 
 							}
 							else
 							{
 								if (decode.vcvtt.op == 0)
 								{
-									instruction->operands[0].cls = REG;
-									instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vcvtt.d << 4) | decode.vcvtt.vd));
-									instruction->operands[1].cls = REG;
-									instruction->operands[1].reg = (Register)(REG_S0 + ((decode.vcvtt.vm << 1) | decode.vcvtt.m));
+									instruction->operands[0].cls = OC_REG;
+									instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vcvtt.d << 4) | decode.vcvtt.vd));
+									instruction->operands[1].cls = OC_REG;
+									instruction->operands[1].reg = (Register)(ARMV7_REG_S0 + ((decode.vcvtt.vm << 1) | decode.vcvtt.m));
 								}
 								else
 								{
-									instruction->operands[0].cls = REG;
-									instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vcvtt.vd << 1) | decode.vcvtt.d));
-									instruction->operands[1].cls = REG;
-									instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vcvtt.m << 4) | decode.vcvtt.vm));
+									instruction->operands[0].cls = OC_REG;
+									instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vcvtt.vd << 1) | decode.vcvtt.d));
+									instruction->operands[1].cls = OC_REG;
+									instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vcvtt.m << 4) | decode.vcvtt.vm));
 								}
 							}
 						}
@@ -6622,17 +6622,17 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 							instruction->operation = operation[decode.vmla.n];
 							if (decode.vmla.sz == 0)
 							{
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
-								instruction->operands[1].cls = REG;
-								instruction->operands[1].reg = (Register)(REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
+								instruction->operands[1].cls = OC_REG;
+								instruction->operands[1].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
 							}
 							else
 							{
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
-								instruction->operands[1].cls = REG;
-								instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
+								instruction->operands[1].cls = OC_REG;
+								instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
 							}
 						}
 						break;
@@ -6642,15 +6642,15 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 							instruction->operation = operation[decode.vmla.n];
 							if (decode.vmla.sz == 0)
 							{
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
 							}
 							else
 							{
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
 							}
-							instruction->operands[1].cls = FIMM32;
+							instruction->operands[1].cls = OC_FIMM32;
 						}
 						break;
 					case 6:
@@ -6659,17 +6659,17 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 							instruction->operation = operation[decode.vrint.op];
 							if (decode.vrint.sz == 0)
 							{
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vrint.vd << 1) | decode.vrint.d));
-								instruction->operands[1].cls = REG;
-								instruction->operands[1].reg = (Register)(REG_S0 + ((decode.vrint.vm << 1) | decode.vrint.m));
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vrint.vd << 1) | decode.vrint.d));
+								instruction->operands[1].cls = OC_REG;
+								instruction->operands[1].reg = (Register)(ARMV7_REG_S0 + ((decode.vrint.vm << 1) | decode.vrint.m));
 							}
 							else
 							{
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vrint.d << 4) | decode.vrint.vd));
-								instruction->operands[1].cls = REG;
-								instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vrint.m << 4) | decode.vrint.vm));
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vrint.d << 4) | decode.vrint.vd));
+								instruction->operands[1].cls = OC_REG;
+								instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vrint.m << 4) | decode.vrint.vm));
 							}
 						}
 						break;
@@ -6683,17 +6683,17 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 								instruction->dataType2 = dtMap[decode.vmla.sz];
 								if (decode.vmla.sz == 1)
 								{
-									instruction->operands[0].cls = REG;
-									instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
-									instruction->operands[1].cls = REG;
-									instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
+									instruction->operands[0].cls = OC_REG;
+									instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
+									instruction->operands[1].cls = OC_REG;
+									instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
 								}
 								else
 								{
-									instruction->operands[0].cls = REG;
-									instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
-									instruction->operands[1].cls = REG;
-									instruction->operands[1].reg = (Register)(REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
+									instruction->operands[0].cls = OC_REG;
+									instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
+									instruction->operands[1].cls = OC_REG;
+									instruction->operands[1].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
 								}
 
 							}
@@ -6703,17 +6703,17 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 								instruction->dataType  = dtMap[decode.vmla.sz];
 								if (decode.vmla.sz == 0)
 								{
-									instruction->operands[0].cls = REG;
-									instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
-									instruction->operands[1].cls = REG;
-									instruction->operands[1].reg = (Register)(REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
+									instruction->operands[0].cls = OC_REG;
+									instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
+									instruction->operands[1].cls = OC_REG;
+									instruction->operands[1].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
 								}
 								else
 								{
-									instruction->operands[0].cls = REG;
-									instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
-									instruction->operands[1].cls = REG;
-									instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
+									instruction->operands[0].cls = OC_REG;
+									instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
+									instruction->operands[1].cls = OC_REG;
+									instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
 								}
 							}
 						}
@@ -6725,17 +6725,17 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 							static DataType dtMap2[2] = {DT_U32, DT_S32};
 							instruction->dataType = dtMap1[decode.vcvtr.sz];
 							instruction->dataType2 = dtMap2[decode.vcvtr.op];
-							instruction->operands[1].cls = REG;
-							instruction->operands[1].reg = (Register)(REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
+							instruction->operands[1].cls = OC_REG;
+							instruction->operands[1].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
 							if (decode.vmla.sz == 0)
 							{
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
 							}
 							else
 							{
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.d << 4) | decode.vmla.vd));
 							}
 
 						}
@@ -6759,17 +6759,17 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 								instruction->dataType2 = dtMap[decode.vcvt.u];
 								if (decode.vmla.sz == 0)
 								{
-									instruction->operands[0].cls = REG;
-									instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vmla.vd << 1) | decode.vmla.d));
-									instruction->operands[1].cls = REG;
-									instruction->operands[1].reg = (Register)(REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
+									instruction->operands[0].cls = OC_REG;
+									instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.vd << 1) | decode.vmla.d));
+									instruction->operands[1].cls = OC_REG;
+									instruction->operands[1].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
 								}
 								else
 								{
-									instruction->operands[0].cls = REG;
-									instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vmla.d << 4) | decode.vmla.vd));
-									instruction->operands[1].cls = REG;
-									instruction->operands[1].reg = (Register)(REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
+									instruction->operands[0].cls = OC_REG;
+									instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.d << 4) | decode.vmla.vd));
+									instruction->operands[1].cls = OC_REG;
+									instruction->operands[1].reg = (Register)(ARMV7_REG_D0 + ((decode.vmla.m << 4) | decode.vmla.vm));
 								}
 							}
 							else
@@ -6779,9 +6779,9 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 								DataType dtMap2[2] = {DT_F32, DT_F64};
 								instruction->dataType = DT_U32;
 								instruction->dataType2 = dtMap2[decode.vcvta.sz];
-								instruction->operands[0].cls = REG;
-								instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vcvta.vd << 1) | decode.vcvta.d));
-								instruction->operands[1].cls = REG;
+								instruction->operands[0].cls = OC_REG;
+								instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vcvta.vd << 1) | decode.vcvta.d));
+								instruction->operands[1].cls = OC_REG;
 								if (decode.vcvta.sz == 1)
 									instruction->operands[1].reg = (Register)(fregMap[decode.vcvta.sz] +
 										((decode.vcvta.m << 4) | decode.vcvta.vm));
@@ -6798,9 +6798,9 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 							static DataType dtMap2[2] = {DT_F32, DT_F64};
 							instruction->dataType = DT_S32;
 							instruction->dataType2 = dtMap2[decode.vcvta.sz];
-							instruction->operands[0].cls = REG;
-							instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vcvta.vd << 1) | decode.vcvta.d));
-							instruction->operands[1].cls = REG;
+							instruction->operands[0].cls = OC_REG;
+							instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vcvta.vd << 1) | decode.vcvta.d));
+							instruction->operands[1].cls = OC_REG;
 							if (decode.vcvta.sz == 1)
 								instruction->operands[1].reg = (Register)(fregMap[decode.vcvta.sz] +
 									((decode.vcvta.m << 4) | decode.vcvta.vm));
@@ -6837,11 +6837,11 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 							{
 								reg = fregMap[decode.vcvt.sf] + ((decode.vcvt.vd << 1) | decode.vcvt.d);
 							}
-							instruction->operands[0].cls = REG;
+							instruction->operands[0].cls = OC_REG;
 							instruction->operands[0].reg = (Register)reg;
-							instruction->operands[1].cls = REG;
+							instruction->operands[1].cls = OC_REG;
 							instruction->operands[1].reg = (Register)reg;
-							instruction->operands[2].cls = IMM;
+							instruction->operands[2].cls = OC_IMM;
 							instruction->operands[2].imm = (16 << decode.vcvt.sx) - ((decode.vcvt.imm4 << 1) | decode.vcvt.i);
 
 						}
@@ -6880,11 +6880,11 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 							{
 								reg = fregMap[decode.vcvt.sf] + ((decode.vcvt.vd << 1) | decode.vcvt.d);
 							}
-							instruction->operands[0].cls = REG;
+							instruction->operands[0].cls = OC_REG;
 							instruction->operands[0].reg = (Register)reg;
-							instruction->operands[1].cls = REG;
+							instruction->operands[1].cls = OC_REG;
 							instruction->operands[1].reg = (Register)reg;
-							instruction->operands[2].cls = IMM;
+							instruction->operands[2].cls = OC_IMM;
 							instruction->operands[2].imm = (16 << decode.vcvt.sx) - ((decode.vcvt.imm4 << 1) | decode.vcvt.i);
 						}
 						break;
@@ -6895,7 +6895,7 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 //	}
 //	else
 //	{
-//		uint32_t fregMap[2] = {REG_SINGLE, REG_DOUBLE};
+//		uint32_t fregMap[2] = {ARMV7_REG_SINGLE, ARMV7_REG_DOUBLE};
 //		DataType dtMap[2] = {DT_F32, DT_F64};
 //		printf("opc1: %d\n", decode.com.opc1);
 //		switch (decode.com.opc1)
@@ -6904,11 +6904,11 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 //				instruction->operation = ARMV7_VSEL;
 //				instruction->cond = (Condition)decode.com.cond;
 //				instruction->dataType = dtMap[decode.vsel.sz];
-//				instruction->operands[0].cls = fregMap[decode.vsel.sz];
+//				instruction->operands[0].cls = OC_fregMap[decode.vsel.sz];
 //				instruction->operands[0].reg = (Register)decode.vsel.vd;
-//				instruction->operands[1].cls = fregMap[decode.vsel.sz];
+//				instruction->operands[1].cls = OC_fregMap[decode.vsel.sz];
 //				instruction->operands[1].reg = (Register)decode.vsel.vn;
-//				instruction->operands[2].cls = fregMap[decode.vsel.sz];
+//				instruction->operands[2].cls = OC_fregMap[decode.vsel.sz];
 //				instruction->operands[2].reg = (Register)decode.vsel.vm;
 //				break;
 //			case 8: case 12:
@@ -6916,11 +6916,11 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 //					Operation operation[2] = {ARMV7_VMAXNM, ARMV7_VMINM};
 //					instruction->operation = operation[decode.vmax.op];
 //					instruction->dataType = dtMap[decode.vmax.sz];
-//					instruction->operands[0].cls = fregMap[decode.vmax.sz];
+//					instruction->operands[0].cls = OC_fregMap[decode.vmax.sz];
 //					instruction->operands[0].reg = (Register)decode.vmax.vd;
-//					instruction->operands[1].cls = fregMap[decode.vmax.sz];
+//					instruction->operands[1].cls = OC_fregMap[decode.vmax.sz];
 //					instruction->operands[1].reg = (Register)decode.vmax.vn;
-//					instruction->operands[2].cls = fregMap[decode.vmax.sz];
+//					instruction->operands[2].cls = OC_fregMap[decode.vmax.sz];
 //					instruction->operands[2].reg = (Register)decode.vmax.vm;
 //				}
 //				break;
@@ -6932,9 +6932,9 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 //						Operation operation[4] = {ARMV7_VRINTA, ARMV7_VRINTN, ARMV7_VRINTP, ARMV7_VRINTM};
 //						instruction->operation = operation[decode.vrint2.rm];
 //						instruction->dataType = dtMap[decode.vrint2.sz];
-//						instruction->operands[0].cls = fregMap[decode.vrint2.sz];
+//						instruction->operands[0].cls = OC_fregMap[decode.vrint2.sz];
 //						instruction->operands[0].reg = (Register)decode.vrint2.vd;
-//						instruction->operands[1].cls = fregMap[decode.vrint2.sz];
+//						instruction->operands[1].cls = OC_fregMap[decode.vrint2.sz];
 //						instruction->operands[1].reg = (Register)decode.vrint2.vm;
 //					}
 //				}
@@ -6947,9 +6947,9 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 //						instruction->operation = operation[decode.vcvt2.rm];
 //						instruction->dataType = dtMap2[decode.vcvt2.op];
 //						instruction->dataType2 = dtMap[decode.vcvt2.sz];
-//						instruction->operands[0].cls = fregMap[decode.vcvt2.sz];
+//						instruction->operands[0].cls = OC_fregMap[decode.vcvt2.sz];
 //						instruction->operands[0].reg = (Register)decode.vcvt2.vd;
-//						instruction->operands[1].cls = fregMap[decode.vcvt2.sz];
+//						instruction->operands[1].cls = OC_fregMap[decode.vcvt2.sz];
 //						instruction->operands[1].reg = (Register)decode.vcvt2.vm;
 //					}
 //				}
@@ -6968,23 +6968,23 @@ uint32_t armv7_floating_point_data_processing(uint32_t instructionValue, Instruc
 	uint32_t i = 0;
 	if (decode.vmla.sz == 1)
 	{
-		instruction->operands[i].cls = REG;
-		instruction->operands[i++].reg = (Register)(REG_D0 + (decode.vmla.vd | (decode.vmla.d << 4)));
-		instruction->operands[i].cls = REG;
-		instruction->operands[i].reg = (Register)(REG_D0 + (decode.vmla.vn | (decode.vmla.n << 4)));
+		instruction->operands[i].cls = OC_REG;
+		instruction->operands[i++].reg = (Register)(ARMV7_REG_D0 + (decode.vmla.vd | (decode.vmla.d << 4)));
+		instruction->operands[i].cls = OC_REG;
+		instruction->operands[i].reg = (Register)(ARMV7_REG_D0 + (decode.vmla.vn | (decode.vmla.n << 4)));
 		i += type;
-		instruction->operands[i].cls  = REG;
-		instruction->operands[i].reg = (Register)(REG_D0 + (decode.vmla.vm | (decode.vmla.m << 4)));
+		instruction->operands[i].cls  = OC_REG;
+		instruction->operands[i].reg = (Register)(ARMV7_REG_D0 + (decode.vmla.vm | (decode.vmla.m << 4)));
 	}
 	else
 	{
-		instruction->operands[i].cls = REG;
-		instruction->operands[i++].reg = (Register)(REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
-		instruction->operands[i].cls = REG;
-		instruction->operands[i].reg = (Register)(REG_S0 + ((decode.vmla.vn << 1) | decode.vmla.n));
+		instruction->operands[i].cls = OC_REG;
+		instruction->operands[i++].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vd << 1) | decode.vmla.d));
+		instruction->operands[i].cls = OC_REG;
+		instruction->operands[i].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vn << 1) | decode.vmla.n));
 		i += type;
-		instruction->operands[i].cls = REG;
-		instruction->operands[i].reg = (Register)(REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
+		instruction->operands[i].cls = OC_REG;
+		instruction->operands[i].reg = (Register)(ARMV7_REG_S0 + ((decode.vmla.vm << 1) | decode.vmla.m));
 	}
 	return instruction->operation == ARMV7_UNDEFINED;
 }
@@ -7052,31 +7052,31 @@ uint32_t armv7_extension_register_load_store(uint32_t instructionValue, Instruct
 		case 5:
 			{
 				instruction->operation = ARMV7_VMOV;
-				uint32_t fregMap[2] = {REG_S0, REG_R0};
+				uint32_t fregMap[2] = {ARMV7_REG_S0, ARMV7_REG_R0};
 				uint32_t m = (decode.vmov1.vm << 1) | decode.vmov1.m;
 
 				if (decode.vmov.c == 0)
 				{
 					if (decode.vmov1.op == 1)
 					{
-						instruction->operands[0].cls = REG;
+						instruction->operands[0].cls = OC_REG;
 						instruction->operands[0].reg = (Register)(fregMap[decode.vmov.op] + (m));
-						instruction->operands[1].cls = REG;
+						instruction->operands[1].cls = OC_REG;
 						instruction->operands[1].reg = (Register)(fregMap[decode.vmov.op] + (m+1));
-						instruction->operands[2].cls = REG;
+						instruction->operands[2].cls = OC_REG;
 						instruction->operands[2].reg = (Register)(fregMap[!decode.vmov.op] + (decode.vmov.vm));
-						instruction->operands[3].cls = REG;
+						instruction->operands[3].cls = OC_REG;
 						instruction->operands[3].reg = (Register)(fregMap[!decode.vmov.op] + (decode.vmov.vm + 1));
 					}
 					else
 					{
-						instruction->operands[0].cls = REG;
+						instruction->operands[0].cls = OC_REG;
 						instruction->operands[0].reg = (Register)(fregMap[!decode.vmov.op] + (decode.vmov.vm));
-						instruction->operands[1].cls = REG;
+						instruction->operands[1].cls = OC_REG;
 						instruction->operands[1].reg = (Register)(fregMap[!decode.vmov.op] + (decode.vmov.vm + 1));
-						instruction->operands[2].cls = REG;
+						instruction->operands[2].cls = OC_REG;
 						instruction->operands[2].reg = (Register)(fregMap[decode.vmov.op] + (m));
-						instruction->operands[3].cls = REG;
+						instruction->operands[3].cls = OC_REG;
 						instruction->operands[3].reg = (Register)(fregMap[decode.vmov.op] + (m+1));
 					}
 				}
@@ -7084,20 +7084,20 @@ uint32_t armv7_extension_register_load_store(uint32_t instructionValue, Instruct
 				{
 					if (decode.vmov1.op == 1)
 					{
-						instruction->operands[0].cls = REG;
+						instruction->operands[0].cls = OC_REG;
 						instruction->operands[0].reg = (Register)m;
-						instruction->operands[1].cls = REG;
+						instruction->operands[1].cls = OC_REG;
 						instruction->operands[1].reg = (Register)decode.vmov1.rt;
-						instruction->operands[2].cls = REG;
+						instruction->operands[2].cls = OC_REG;
 						instruction->operands[2].reg = (Register)decode.vmov1.rt2;
 					}
 					else
 					{
-						instruction->operands[0].cls = REG;
+						instruction->operands[0].cls = OC_REG;
 						instruction->operands[0].reg = (Register)decode.vmov1.rt;
-						instruction->operands[1].cls = REG;
+						instruction->operands[1].cls = OC_REG;
 						instruction->operands[1].reg = (Register)decode.vmov1.rt2;
-						instruction->operands[2].cls = REG;
+						instruction->operands[2].cls = OC_REG;
 						instruction->operands[2].reg = (Register)m;
 					}
 				}
@@ -7110,7 +7110,7 @@ uint32_t armv7_extension_register_load_store(uint32_t instructionValue, Instruct
 		case 12:
 		case 14:
 			{
-				static OperandClass regListType[2] = {REG_LIST_SINGLE, REG_LIST_DOUBLE};
+				static OperandClass regListType[2] = {OC_REG_LIST_SINGLE, OC_REG_LIST_DOUBLE};
 				if ((decode.vstm.p == 0 && decode.vstm.u == 0 && decode.vstm.w == 0) ||
 					((decode.vstm.imm8 & 1) == 1 && decode.vstm.size == 1))
 				{
@@ -7136,7 +7136,7 @@ uint32_t armv7_extension_register_load_store(uint32_t instructionValue, Instruct
 				uint32_t i = 0;
 				if (instruction->operation != ARMV7_VPUSH)
 				{
-					instruction->operands[i].cls = REG;
+					instruction->operands[i].cls = OC_REG;
 					instruction->operands[i].flags.wb = decode.vstm.w;
 					instruction->operands[i++].reg = (Register)decode.vstm.rn;
 				}
@@ -7158,15 +7158,15 @@ uint32_t armv7_extension_register_load_store(uint32_t instructionValue, Instruct
 			instruction->operation = ARMV7_VSTR;
 			if (decode.vstm.size == 0)
 			{
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vstm.vd << 1) | decode.vstm.d));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vstm.vd << 1) | decode.vstm.d));
 			}
 			else
 			{
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vstm.d << 4) | decode.vstm.vd));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vstm.d << 4) | decode.vstm.vd));
 			}
-			instruction->operands[1].cls = MEM_IMM;
+			instruction->operands[1].cls = OC_MEM_IMM;
 			instruction->operands[1].reg = (Register)decode.vstm.rn;
 			instruction->operands[1].imm = decode.vstm.imm8 << 2;
 			instruction->operands[1].flags.add = decode.vstm.u;
@@ -7178,7 +7178,7 @@ uint32_t armv7_extension_register_load_store(uint32_t instructionValue, Instruct
 		case 19:
 		case 23:
 			{
-				static OperandClass regListType[2] = {REG_LIST_SINGLE, REG_LIST_DOUBLE};
+				static OperandClass regListType[2] = {OC_REG_LIST_SINGLE, OC_REG_LIST_DOUBLE};
 				if ((decode.vstm.p == 0 && decode.vstm.u == 0 && decode.vstm.w == 0) ||
 					((decode.vstm.imm8 & 1) == 1 && decode.vstm.size == 1))
 				{
@@ -7208,7 +7208,7 @@ uint32_t armv7_extension_register_load_store(uint32_t instructionValue, Instruct
 				uint32_t i = 0;
 				if (instruction->operation != ARMV7_VPOP)
 				{
-					instruction->operands[i].cls = REG;
+					instruction->operands[i].cls = OC_REG;
 					instruction->operands[i].flags.wb = decode.vstm.w;
 					instruction->operands[i++].reg = (Register)decode.vstm.rn;
 				}
@@ -7230,15 +7230,15 @@ uint32_t armv7_extension_register_load_store(uint32_t instructionValue, Instruct
 			instruction->operation = ARMV7_VLDR;
 			if (decode.vstm.size == 0)
 			{
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_S0 + ((decode.vstm.vd << 1) | decode.vstm.d));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_S0 + ((decode.vstm.vd << 1) | decode.vstm.d));
 			}
 			else
 			{
-				instruction->operands[0].cls = REG;
-				instruction->operands[0].reg = (Register)(REG_D0 + ((decode.vstm.d << 4) | decode.vstm.vd));
+				instruction->operands[0].cls = OC_REG;
+				instruction->operands[0].reg = (Register)(ARMV7_REG_D0 + ((decode.vstm.d << 4) | decode.vstm.vd));
 			}
-			instruction->operands[1].cls = MEM_IMM;
+			instruction->operands[1].cls = OC_MEM_IMM;
 			instruction->operands[1].reg = (Register)decode.vstm.rn;
 			instruction->operands[1].imm = decode.vstm.imm8 << 2;
 			instruction->operands[1].flags.add = decode.vstm.u;
@@ -7448,7 +7448,7 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 		case 0:
 			{
 			instruction->dataType = dtMap[decode.vst.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].flags.hasElements = 0;
 			uint32_t d = (decode.vst.d << 4) | decode.vst.vd;
 			if (decode.vst.type == 7)
@@ -7471,7 +7471,7 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 			{
 				instruction->operands[0].reg = (Register)(15 << d);
 			}
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.vst.rn;
 			instruction->operands[1].flags.wb = decode.vst.rm == 13;
 			if (decode.vst.align == 0)
@@ -7480,7 +7480,7 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 				instruction->operands[1].imm = 32 << decode.vst.align;
 			if (decode.vst.rm != 15 && decode.vst.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.vst.rm;
 			}
 			}
@@ -7505,10 +7505,10 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 			}
 
 			instruction->dataType = dtMap[decode.vst.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].flags.hasElements = 0;
 			instruction->operands[0].reg = (Register)regs;
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.vst.rn;
 			instruction->operands[1].flags.wb = decode.vst.rm == 13;
 			if (decode.vst.align == 0)
@@ -7517,7 +7517,7 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 				instruction->operands[1].imm = 32 << decode.vst.align;
 			if (decode.vst.rm != 15 && decode.vst.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.vst.rm;
 			}
 			}
@@ -7529,10 +7529,10 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 				regs = 21 << ((decode.vst.d << 4) | decode.vst.vd);
 
 			instruction->dataType = dtMap[decode.vst.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].flags.hasElements = 0;
 			instruction->operands[0].reg = (Register)regs;
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.vst.rn;
 			instruction->operands[1].flags.wb = decode.vst.rm == 13;
 			if (decode.vst.align == 0)
@@ -7541,7 +7541,7 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 				instruction->operands[1].imm = 32 << decode.vst.align;
 			if (decode.vst.rm != 15 && decode.vst.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.vst.rm;
 			}
 			break;
@@ -7552,10 +7552,10 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 				regs = ROTL32(0x55, ((decode.vst.d << 4) | decode.vst.vd));
 
 			instruction->dataType = dtMap[decode.vst.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].flags.hasElements = 0;
 			instruction->operands[0].reg = (Register)regs;
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.vst.rn;
 			instruction->operands[1].flags.wb = decode.vst.rm == 13;
 			if (decode.vst.align == 0)
@@ -7564,7 +7564,7 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 				instruction->operands[1].imm = 32 << decode.vst.align;
 			if (decode.vst.rm != 15 && decode.vst.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.vst.rm;
 			}
 			break;
@@ -7598,15 +7598,15 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 					return 1;
 			}
 			instruction->dataType = dtMap[decode.v2.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].reg = (Register)regs;
 			instruction->operands[0].flags.hasElements = 1;
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.v2.rn;
 			instruction->operands[1].flags.wb = decode.v2.rm == 13;
 			if (decode.v2.rm != 15 && decode.v2.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.v2.rm;
 			}
 			break;
@@ -7644,15 +7644,15 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 					return 1;
 			}
 			instruction->dataType = dtMap[decode.v2.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].reg = (Register)regs;
 			instruction->operands[0].flags.hasElements = 1;
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.v2.rn;
 			instruction->operands[1].flags.wb = decode.v2.rm == 13;
 			if (decode.v2.rm != 15 && decode.v2.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.v2.rm;
 			}
 			break;
@@ -7690,15 +7690,15 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 					return 1;
 			}
 			instruction->dataType = dtMap[decode.v2.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].reg = (Register)regs;
 			instruction->operands[0].flags.hasElements = 1;
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.v2.rn;
 			instruction->operands[1].flags.wb = decode.v2.rm == 13;
 			if (decode.v2.rm != 15 && decode.v2.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.v2.rm;
 			}
 			break;
@@ -7738,15 +7738,15 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 					return 1;
 			}
 			instruction->dataType = dtMap[decode.v2.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].reg = (Register)regs;
 			instruction->operands[0].flags.hasElements = 1;
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.v2.rn;
 			instruction->operands[1].flags.wb = decode.v2.rm == 13;
 			if (decode.v2.rm != 15 && decode.v2.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.v2.rm;
 			}
 			break;
@@ -7754,16 +7754,16 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 			{
 			static uint32_t regNumMap[2] = {1,3};
 			instruction->dataType = dtMap[decode.v3.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].reg = (Register)(regNumMap[decode.v3.t] << ((decode.v3.d << 4) | decode.v3.vd));
 			instruction->operands[0].flags.hasElements = 1;
 			instruction->operands[0].flags.emptyElement = 1;
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.v3.rn;
 			instruction->operands[1].flags.wb = decode.v3.rm == 13;
 			if (decode.v3.rm != 15 && decode.v3.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.v3.rm;
 			}
 			}
@@ -7772,16 +7772,16 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 			{
 			static uint32_t regNumMap[2] = {3,5};
 			instruction->dataType = dtMap[decode.v3.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].reg = (Register)(regNumMap[decode.v3.t] << ((decode.v3.d << 4) | decode.v3.vd));
 			instruction->operands[0].flags.hasElements = 1;
 			instruction->operands[0].flags.emptyElement = 1;
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.v3.rn;
 			instruction->operands[1].flags.wb = decode.v3.rm == 13;
 			if (decode.v3.rm != 15 && decode.v3.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.v3.rm;
 			}
 			if ((decode.vst.align & 1) == 1)
@@ -7792,16 +7792,16 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 			{
 			static uint32_t regNumMap[2] = {7,21};
 			instruction->dataType = dtMap[decode.v3.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].reg = (Register)(regNumMap[decode.v3.t] << ((decode.v3.d << 4) | decode.v3.vd));
 			instruction->operands[0].flags.hasElements = 1;
 			instruction->operands[0].flags.emptyElement = 1;
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.v3.rn;
 			instruction->operands[1].flags.wb = decode.v3.rm == 13;
 			if (decode.v3.rm != 15 && decode.v3.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.v3.rm;
 			}
 			}
@@ -7810,16 +7810,16 @@ uint32_t armv7_simd_load_store(uint32_t instructionValue, Instruction* restrict 
 			{
 			static uint32_t regNumMap[2] = {15,85};
 			instruction->dataType = dtMap[decode.v3.size];
-			instruction->operands[0].cls = REG_LIST_DOUBLE;
+			instruction->operands[0].cls = OC_REG_LIST_DOUBLE;
 			instruction->operands[0].reg = (Register)(regNumMap[decode.v3.t] << ((decode.v3.d << 4) | decode.v3.vd));
 			instruction->operands[0].flags.hasElements = 1;
 			instruction->operands[0].flags.emptyElement = 1;
-			instruction->operands[1].cls = MEM_ALIGNED;
+			instruction->operands[1].cls = OC_MEM_ALIGNED;
 			instruction->operands[1].reg = (Register)decode.v3.rn;
 			instruction->operands[1].flags.wb = decode.v3.rm == 13;
 			if (decode.v3.rm != 15 && decode.v3.rm != 13)
 			{
-				instruction->operands[2].cls = REG;
+				instruction->operands[2].cls = OC_REG;
 				instruction->operands[2].reg = (Register)decode.v3.rm;
 			}
 			if ((decode.vst.align & 1) == 1)
@@ -7905,9 +7905,9 @@ uint32_t armv7_transfers(uint32_t instructionValue, Instruction* restrict instru
 		if (decode.com.a == 0)
 		{
 			instruction->operation = ARMV7_VMOV;
-			instruction->operands[decode.vmov.op].cls = REG;
-			instruction->operands[decode.vmov.op].reg = (Register)(REG_S0 + (((decode.vmov.vn << 1) | decode.vmov.n)));
-			instruction->operands[!decode.vmov.op].cls = REG;
+			instruction->operands[decode.vmov.op].cls = OC_REG;
+			instruction->operands[decode.vmov.op].reg = (Register)(ARMV7_REG_S0 + (((decode.vmov.vn << 1) | decode.vmov.n)));
+			instruction->operands[!decode.vmov.op].cls = OC_REG;
 			instruction->operands[!decode.vmov.op].reg = (Register)decode.vmov.rt;
 		}
 		else if (decode.com.a == 7)
@@ -7932,19 +7932,19 @@ uint32_t armv7_transfers(uint32_t instructionValue, Instruction* restrict instru
 			};
 			static Operation operation[2] = {ARMV7_VMSR, ARMV7_VMRS};
 			instruction->operation = operation[decode.com.l];
-			instruction->operands[decode.com.l].cls = REG_SPEC;
+			instruction->operands[decode.com.l].cls = OC_REG_SPEC;
 			instruction->operands[decode.com.l].regs = regs[decode.vmsr.reg];
 			if (instruction->operands[decode.com.l].regs == REGS_END)
 
 				return 1;
 			if (instruction->operands[decode.com.l].regs == REGS_FPSCR && decode.vmsr.rt == 15)
 			{
-				instruction->operands[!decode.com.l].cls = REG_SPEC;
+				instruction->operands[!decode.com.l].cls = OC_REG_SPEC;
 				instruction->operands[!decode.com.l].regs = REGS_APSR_NZCV;
 			}
 			else
 			{
-				instruction->operands[!decode.com.l].cls = REG;
+				instruction->operands[!decode.com.l].cls = OC_REG;
 				instruction->operands[!decode.com.l].reg = (Register)decode.vmsr.rt;
 			}
 		}
@@ -7954,8 +7954,8 @@ uint32_t armv7_transfers(uint32_t instructionValue, Instruction* restrict instru
 		if (decode.com.a < 4 || decode.com.l == 1)
 		{
 			instruction->operation = ARMV7_VMOV;
-			instruction->operands[decode.com.l].cls = REG;
-			instruction->operands[decode.com.l].reg = (Register)(REG_D0 + (((decode.vmov2.d << 4) | decode.vmov2.vd)));
+			instruction->operands[decode.com.l].cls = OC_REG;
+			instruction->operands[decode.com.l].reg = (Register)(ARMV7_REG_D0 + (((decode.vmov2.d << 4) | decode.vmov2.vd)));
 			instruction->operands[decode.com.l].flags.hasElements = 1;
 			if (decode.com.l == 0)
 			{
@@ -8020,7 +8020,7 @@ uint32_t armv7_transfers(uint32_t instructionValue, Instruction* restrict instru
 					}
 				}
 			}
-			instruction->operands[!decode.com.l].cls = REG;
+			instruction->operands[!decode.com.l].cls = OC_REG;
 			instruction->operands[!decode.com.l].reg = (Register)decode.vmov2.rt;
 		}
 		else
@@ -8029,9 +8029,9 @@ uint32_t armv7_transfers(uint32_t instructionValue, Instruction* restrict instru
 			{
 				instruction->operation = ARMV7_VDUP;
 				instruction->dataType = (DataType)(DT_32 - ((decode.vdup.b << 1) | decode.vdup.e));
-				instruction->operands[0].cls = REG;
+				instruction->operands[0].cls = OC_REG;
 				instruction->operands[0].reg = (Register)(regMap[decode.vdup.q] + (((decode.vdup.d << 4) | decode.vdup.vd) >> decode.vdup.q));
-				instruction->operands[1].cls = REG;
+				instruction->operands[1].cls = OC_REG;
 				instruction->operands[1].reg = (Register)decode.vdup.rt;
 			}
 		}
@@ -8076,13 +8076,13 @@ uint32_t armv7_64_bit_transfers(uint32_t instructionValue, Instruction* restrict
 		// VMOV<c> <Sm>, <Sm1>, <Rt>, <Rt2>
 		// VMOV<c> <Rt>, <Rt2>, <Sm>, <Sm1>
 		static uint8_t entries[2][4] = {{0,1,2,3}, {2,3,0,1}};
-		instruction->operands[entries[decode.vmov1.op][0]].cls = REG;
-		instruction->operands[entries[decode.vmov1.op][0]].reg = (Register)(REG_S0 + ((decode.vmov1.vm << 1) | decode.vmov1.m));
-		instruction->operands[entries[decode.vmov1.op][1]].cls = REG;
-		instruction->operands[entries[decode.vmov1.op][1]].reg = (Register)(REG_S0 + (((decode.vmov1.vm << 1) | decode.vmov1.m) + 1));
-		instruction->operands[entries[decode.vmov1.op][2]].cls = REG;
+		instruction->operands[entries[decode.vmov1.op][0]].cls = OC_REG;
+		instruction->operands[entries[decode.vmov1.op][0]].reg = (Register)(ARMV7_REG_S0 + ((decode.vmov1.vm << 1) | decode.vmov1.m));
+		instruction->operands[entries[decode.vmov1.op][1]].cls = OC_REG;
+		instruction->operands[entries[decode.vmov1.op][1]].reg = (Register)(ARMV7_REG_S0 + (((decode.vmov1.vm << 1) | decode.vmov1.m) + 1));
+		instruction->operands[entries[decode.vmov1.op][2]].cls = OC_REG;
 		instruction->operands[entries[decode.vmov1.op][2]].reg = (Register)decode.vmov1.rt;
-		instruction->operands[entries[decode.vmov1.op][3]].cls = REG;
+		instruction->operands[entries[decode.vmov1.op][3]].cls = OC_REG;
 		instruction->operands[entries[decode.vmov1.op][3]].reg = (Register)decode.vmov1.rt2;
 	}
 	else
@@ -8090,11 +8090,11 @@ uint32_t armv7_64_bit_transfers(uint32_t instructionValue, Instruction* restrict
 		// VMOV<c> <Dm>, <Rt>, <Rt2>
 		// VMOV<c> <Rt>, <Rt2>, <Dm>
 		static uint8_t entries[2][3] = {{0,1,2}, {2,0,1}};
-		instruction->operands[entries[decode.vmov1.op][0]].cls = REG;
-		instruction->operands[entries[decode.vmov1.op][0]].reg = (Register)(REG_D0 + ((decode.vmov1.m << 4) | decode.vmov1.vm));
-		instruction->operands[entries[decode.vmov1.op][1]].cls = REG;
+		instruction->operands[entries[decode.vmov1.op][0]].cls = OC_REG;
+		instruction->operands[entries[decode.vmov1.op][0]].reg = (Register)(ARMV7_REG_D0 + ((decode.vmov1.m << 4) | decode.vmov1.vm));
+		instruction->operands[entries[decode.vmov1.op][1]].cls = OC_REG;
 		instruction->operands[entries[decode.vmov1.op][1]].reg = (Register)decode.vmov1.rt;
-		instruction->operands[entries[decode.vmov1.op][2]].cls = REG;
+		instruction->operands[entries[decode.vmov1.op][2]].cls = OC_REG;
 		instruction->operands[entries[decode.vmov1.op][2]].reg = (Register)decode.vmov1.rt2;
 	}
 	return instruction->operation == ARMV7_UNDEFINED;
@@ -8118,7 +8118,7 @@ const char* get_vector_data_type(DataType dataType)
 static
 const char* get_register_name(Register reg)
 {
-	if (reg >= REG_R0 && reg <= REG_Q15)
+	if (reg >= ARMV7_REG_R0 && reg <= ARMV7_REG_Q15)
 		return registerString[reg];
 	return NULL;
 }
@@ -8132,14 +8132,14 @@ const char* get_banked_register_name(BankedRegister regb)
 
 const char* get_coproc_register_c_name(CoprocRegisterC regc)
 {
-	if (regc >= REG_C0 && regc < REG_CEND)
+	if (regc >= ARMV7_REG_C0 && regc < ARMV7_REG_CEND)
 		return coprocRegisterCString[regc];
 	return NULL;
 }
 
 const char* get_coproc_register_p_name(CoprocRegisterP regp)
 {
-	if (regp >= REG_P0 && regp < REG_PEND)
+	if (regp >= ARMV7_REG_P0 && regp < ARMV7_REG_PEND)
 		return coprocRegisterString[regp];
 	return NULL;
 }
@@ -8189,11 +8189,11 @@ const char* get_condition(Condition cond)
 static
 uint32_t get_register_names(Register reg, const char** regNames, OperandClass cls)
 {
-	uint32_t base = REG_R0;
-	if (cls == REG_LIST_SINGLE)
-		base = REG_S0;
-	else if (cls == REG_LIST_DOUBLE)
-		base = REG_D0;
+	uint32_t base = ARMV7_REG_R0;
+	if (cls == OC_REG_LIST_SINGLE)
+		base = ARMV7_REG_S0;
+	else if (cls == OC_REG_LIST_DOUBLE)
+		base = ARMV7_REG_D0;
 	for (int32_t i = 31; i >= 0; i--)
 	{
 		if (((reg>>i)&1) == 1)
@@ -8237,11 +8237,11 @@ uint32_t get_register_list(InstructionOperand* op, char* out, OperandClass cls)
 UNUSED
 uint32_t get_register_size(Register reg)
 {
-	if (reg <= REG_S31)
+	if (reg <= ARMV7_REG_S31)
 		return 4;
-	else if (reg <= REG_D31)
+	else if (reg <= ARMV7_REG_D31)
 		return 8;
-	else if (reg <= REG_Q15)
+	else if (reg <= ARMV7_REG_Q15)
 		return 16;
 	return 0;
 }
@@ -8274,14 +8274,14 @@ uint32_t armv7_disassemble(
 
 	char* start = (char*)&operands;
 
-	for (uint32_t i = 0; i < MAX_OPERANDS && instruction->operands[i].cls != NONE; i++)
+	for (uint32_t i = 0; i < MAX_OPERANDS && instruction->operands[i].cls != OC_NONE; i++)
 	{
 		InstructionOperand* op = &instruction->operands[i];
 		if (i != 0)
 			start += sprintf(start, ", ");
 		switch (op->cls)
 		{
-		case REG:
+		case OC_REG:
 				//reg
 				//reg[imm]
 				//reg <shift> imm
@@ -8319,49 +8319,49 @@ uint32_t armv7_disassemble(
 						start += sprintf(start, "%s", get_register_name(op->reg));
 				}
 				break;
-			case REG_LIST:
-			case REG_LIST_SINGLE:
-			case REG_LIST_DOUBLE:
+			case OC_REG_LIST:
+			case OC_REG_LIST_SINGLE:
+			case OC_REG_LIST_DOUBLE:
 				get_register_list(op, tmpOperand, op->cls);
 				start += sprintf(start, "{%s}%s", tmpOperand, crt[op->flags.wb]);
 				break;
-			case REG_SPEC:
+			case OC_REG_SPEC:
 				start += sprintf(start, "%s", get_spec_register_name(op->regs));
 				break;
-			case REG_BANKED:
+			case OC_REG_BANKED:
 				start += sprintf(start, "%s", get_banked_register_name(op->regb));
 				break;
-			case REG_COPROCP:
+			case OC_REG_COPROCP:
 				start += sprintf(start, "%s", get_coproc_register_p_name(op->regp));
 				break;
-			case REG_COPROCC:
+			case OC_REG_COPROCC:
 				start += sprintf(start, "%s", get_coproc_register_c_name(op->regc));
 				break;
-			case IFLAGS:
+			case OC_IFLAGS:
 				start += sprintf(start, "%s", get_iflag(op->iflag));
 				break;
-			case ENDIAN_SPEC:
+			case OC_ENDIAN_SPEC:
 				start += sprintf(start, "%s", get_endian(op->endian));
 				break;
-			case DSB_OPTION:
+			case OC_DSB_OPTION:
 				start += sprintf(start, "%s", get_dsb_option(op->dsbOpt));
 				break;
-			case IMM:
+			case OC_IMM:
 				start += sprintf(start, "#%#x", op->imm);
 				break;
-			case LABEL:
+			case OC_LABEL:
 				start += sprintf(start, "%#x", op->imm);
 				break;
-			case IMM64:
+			case OC_IMM64:
 				start += sprintf(start, "#%#" PRIx64, op->imm64);
 				break;
-			case FIMM32:
+			case OC_FIMM32:
 				start += sprintf(start, "#%f", op->immf);
 				break;
-			case FIMM64:
+			case OC_FIMM64:
 				start += sprintf(start, "#%e", op->immd);
 				break;
-			case MEM_ALIGNED:
+			case OC_MEM_ALIGNED:
 				if (op->imm != 0)
 					sprintf(tmpOperand, ":%#x", op->imm);
 				else
@@ -8371,12 +8371,12 @@ uint32_t armv7_disassemble(
 						tmpOperand,
 						wb[op->flags.wb]);
 				break;
-			case MEM_OPTION:
+			case OC_MEM_OPTION:
 				start += sprintf(start, "[%s], {%#x}",
 						get_register_name(op->reg),
 						op->imm);
 				break;
-			case MEM_PRE_IDX:
+			case OC_MEM_PRE_IDX:
 				if (op->flags.offsetRegUsed == 1)
 				{
 					if (op->imm == 0)
@@ -8404,7 +8404,7 @@ uint32_t armv7_disassemble(
 							op->imm);
 				}
 				break;
-			case MEM_POST_IDX:
+			case OC_MEM_POST_IDX:
 				if (op->flags.offsetRegUsed == 1)
 				{
 					if (op->imm == 0)
@@ -8428,7 +8428,7 @@ uint32_t armv7_disassemble(
 							op->imm);
 				}
 				break;
-			case MEM_IMM:
+			case OC_MEM_IMM:
 				if (op->shift == SHIFT_NONE)
 				{
 					if (op->flags.offsetRegUsed == 1)
