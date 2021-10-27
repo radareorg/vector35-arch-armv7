@@ -2913,6 +2913,8 @@ public:
 				reloc.size = 4;
 				break;
 			case PE_IMAGE_REL_ARM_ABSOLUTE:
+				reloc.type = IgnoredRelocation;
+				break;
 			case PE_IMAGE_REL_ARM_ADDR32:
 				reloc.pcRelative = false;
 				reloc.baseRelative = true;
