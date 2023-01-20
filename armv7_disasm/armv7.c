@@ -8194,7 +8194,8 @@ uint32_t get_register_names(Register reg, const char** regNames, OperandClass cl
 		base = ARMV7_REG_S0;
 	else if (cls == OC_REG_LIST_DOUBLE)
 		base = ARMV7_REG_D0;
-	for (int32_t i = 31; i >= 0; i--)
+	int32_t i;
+	for (i = 31; i >= 0; i--)
 	{
 		if (((reg>>i)&1) == 1)
 			regNames[i] = get_register_name((Register)(i + base));
