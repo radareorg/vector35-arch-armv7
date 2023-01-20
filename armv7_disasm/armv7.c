@@ -8214,7 +8214,8 @@ uint32_t get_register_list(InstructionOperand* op, char* out, OperandClass cls)
 		return 1;
 
 	out[0] = '\0';
-	for (uint32_t i = 0; i < 32; i++)
+	uint32_t i;
+	for (i = 0; i < 32; i++)
 	{
 		if (regbuf[i] != 0)
 		{
@@ -8275,7 +8276,8 @@ uint32_t armv7_disassemble(
 
 	char* start = (char*)&operands;
 
-	for (uint32_t i = 0; i < MAX_OPERANDS && instruction->operands[i].cls != OC_NONE; i++)
+	uint32_t i;
+	for (i = 0; i < MAX_OPERANDS && instruction->operands[i].cls != OC_NONE; i++)
 	{
 		InstructionOperand* op = &instruction->operands[i];
 		if (i != 0)
